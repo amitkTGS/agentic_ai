@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+paddleocr
+python-multipart
+openai
+rapidfuzz
+pydantic
+requests
