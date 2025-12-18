@@ -1,12 +1,7 @@
-export const processExpense = async (file, employeeId) => {
-  const form = new FormData();
-  form.append("file", file);
-  form.append("employee_id", employeeId);
+import axios from 'axios';
 
-  const res = await fetch("http://localhost:8000/process?employee_id=" + employeeId, {
-    method: "POST",
-    body: form,
-  });
-
-  return await res.json();
-};
+const auditApi = axios.create({
+  baseUrl : process.env.API_URL,
+  timeout:30000,
+});
+export default auditApi;
