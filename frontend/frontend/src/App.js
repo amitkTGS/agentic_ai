@@ -1,81 +1,36 @@
 import React from "react";
-
-import Upload from "./Upload";
-
-import Dashboard from "./Dashboard";
-
- 
-
+import {BrowserRouter,Link, Route, Routes,Navigate} from "react-router-dom";
+import {Navbar,Container,Nav} from "react-bootstrap";
+import Dashboard from "./pages/Dashboard";
+import Upload from "./pages/Upload";
 function App() {
 
   return (
-
-    <div style={styles.container}>
-
-      <header style={styles.header}>
-
-        <h1>Intelligent Expense Audit Dashboard</h1>
-
-        <p>Upload receipts, auto-audit expenses, and review risks</p>
-
-      </header>
-
- 
-
-      <section style={styles.section}>
-
-        <Upload />
-
-      </section>
-
- 
-
-      <hr />
-
- 
-
-      <section style={styles.section}>
-
-        <Dashboard />
-
-      </section>
-
-    </div>
+    <BrowserRouter>
+     <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+        <Container>
+          <Navbar.Brand as={Link} to={'/'}>Intelligent Expense Audit</Navbar.Brand>
+         <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            {/* Move links to the right side using ms-auto */}
+            <Nav className="ms-auto">
+              <Nav.Link as={Link} to={'/'}>Dashboard</Nav.Link>
+              <Nav.Link as={Link} to={'/add_audit'}>New Audit</Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <Container>
+        <Routes>
+          <Route path="/" element={<Dashboard />}/>
+          <Route path ="/add_audit" element={<Upload />}/>
+          <Route path="*" element={<Navigate to={'/'} replace />} />
+        </Routes>
+      </Container>
+    </BrowserRouter>
 
   );
 
 }
-
- 
-
-const styles = {
-
-  container: {
-
-    fontFamily: "Arial, sans-serif",
-
-    padding: "20px",
-
-    maxWidth: "1200px",
-
-    margin: "0 auto"
-
-  },
-
-  header: {
-
-    marginBottom: "20px"
-
-  },
-
-  section: {
-
-    marginTop: "20px"
-
-  }
-
-};
-
- 
 
 export default App;
