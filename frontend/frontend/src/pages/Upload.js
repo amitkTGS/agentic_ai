@@ -3,6 +3,7 @@ import { Container, Navbar, Card, Form, Alert, Row, Col, Button } from "react-bo
 import auditService from '../services/audit';
 import { useNavigate } from "react-router-dom";
 import { FILE_SETTINGS, EXPENSE_CATEGORIES } from "../services/constants";
+import ResultView from "./ResultView";
 
 
 export default function Upload() {
@@ -16,29 +17,30 @@ export default function Upload() {
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const handleProcess = (e) => {
+
+  const handleProcess = async(e) => {
     e.preventDefault();
-    if (!file || !formData.employeeId || !formData.expenseDate) {
-      setError('Please fill in all mandatory fields and upload a valid file.')
-      return;
-    }
+    // if (!file || !formData.employeeId || !formData.expenseDate) {
+    //   setError('Please fill in all mandatory fields and upload a valid file.')
+    //   return;
+    // }
     var formres = new FormData();
     formres.append('file', file);
-    formres.append('form_data', formData);
+    formres.append('form_data', JSON.stringify(formData));
     setLoading(true);
+    console.log(loading)
     setError(null);
     try {
-      const submitAudit = async () => {
-        const response = await auditService.submitAudit(formres);
-        console.log(response);
-        // navigate('/');
+      const response = await auditService.submitAudit(formres);
+      if(response?.data){
+        setLoading(false);
+        navigate('/result_view/'+response?.data.expense_id)
       }
-      submitAudit();
-      // setResult(response);
     } catch (err) {
       setError('System Error');
     } finally {
       setLoading(false);
+      console.log(loading)
     }
 
   }
@@ -62,6 +64,7 @@ export default function Upload() {
       setFileName(selectedFile.name);
     }
   }
+
   return (
     <div>
       {/* <div className="d-flex justify-content-between align-items-center mb-3">
@@ -96,9 +99,8 @@ export default function Upload() {
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Employee ID <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>ID <span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      required
                       type="text"
                       placeholder="Enter ID"
                       onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
@@ -109,7 +111,6 @@ export default function Upload() {
                   <Form.Group className="mb-3">
                     <Form.Label>Expense Date <span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      required
                       type="date"
                       onChange={(e) => setFormData({ ...formData, expenseDate: e.target.value })}
                     />
@@ -130,6 +131,7 @@ export default function Upload() {
                   ))}
                 </Form.Select>
               </Form.Group>
+              {loading?'asdf':'asdfdsafadsasdf'}
               <div className="d-grid">
                 <Button variant="primary" type="submit" size="lg" disabled={loading}>
                   {loading ? 'Processing...' : 'Process Expense'}

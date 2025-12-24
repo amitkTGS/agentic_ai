@@ -7,7 +7,7 @@ export const AUDIT_STATUS = {
 export const EXPENSE_CATEGORIES = {
     food: { key: 'food', label: 'Food & Dining' },
     travel: { key: 'travel', label: 'Travel & Transport' },
-    software: { key: 'software', label: 'Software & Tools' },
+    office: { key: 'office', label: 'Office' },
     others: { key: 'others', label: 'Others' },
 };
 

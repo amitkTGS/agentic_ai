@@ -1,13 +1,17 @@
 import auditApi from '../api';
 
 const auditService = {
-    async getExpenses(filters={}) {
-        const response = await auditApi.post('/expenses',filters);
-        return response.data;
+    getExpenses(filters={}){
+        return auditApi.post('/expenses',filters);
     },
-    async submitAudit(payload) {
-        const response = await auditApi.post('/process', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
-        return response.data;
+    submitAudit(payload){
+        return auditApi.post('/process',payload);
+    },
+    getExpenseData(id){
+        return auditApi.get('/expense/'+id);
+    },
+    approveExpense(id){
+        return auditApi.delete('expense/approve/'+id);
     }
 }
-export default auditService;
+export default auditService;    

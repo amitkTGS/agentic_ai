@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState,useCallback,useRef } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Spinner, Table, Card, Form, Row, Col } from "react-bootstrap";
 import auditService from "../services/audit";
@@ -6,8 +6,6 @@ import { AUDIT_STATUS, EXPENSE_CATEGORIES } from "../services/constants";
 
 export default function Dashboard() {
   const [items, setItems] = useState([]);
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     status: '',
@@ -15,27 +13,27 @@ export default function Dashboard() {
     start_date: '',
     end_date: ''
   });
+  const navigate = useNavigate();
 
- 
   const isFirstRender = useRef(true);
   const fetchFilteredData = useCallback(async () => {
     console.log(filters);
-    // setLoading(true);
-    // try {
-    //   const result = await auditService.getExpenses(filters);
-    //   setItems(result);
-    // } catch (err) {
-    //   console.error("API Error:", err);
-    // } finally {
-    //   setLoading(false);
-    // }
-  }, [filters]); 
+    try {
+      const result = await auditService.getExpenses(filters);
+      setItems(result.data);
+    } catch (err) {
+      console.error("API Error:", err);
+    }
+  }, [filters]);
 
   useEffect(() => {
-    fetchFilteredData();  
+    fetchFilteredData();
     isFirstRender.current = false;
-  }, [fetchFilteredData]); 
-  
+  }, [fetchFilteredData]);
+
+  const handleView=(item)=>{
+    navigate('/result_view/'+item.id)
+  }
 
   return (
     <div>
@@ -74,7 +72,7 @@ export default function Dashboard() {
             </Form.Select>
           </Col>
 
-          <Col md={3}>
+          <Col md={2}>
             <Form.Label className="small fw-bold">Start Date</Form.Label>
             <Form.Control
               type="date"
@@ -82,7 +80,7 @@ export default function Dashboard() {
             />
           </Col>
 
-          <Col md={3}>
+          <Col md={2}>
             <Form.Label className="small fw-bold">End Date</Form.Label>
             <Form.Control
               type="date"
@@ -92,7 +90,7 @@ export default function Dashboard() {
         </Row>
       </Card>
 
-      {loading ? <Spinner animation="border" /> : (
+      {
         <Table striped bordered hover responsive>
           <thead>
             <tr>
@@ -100,6 +98,8 @@ export default function Dashboard() {
               <th>ID</th>
               <th>Vendor</th>
               <th>Amount</th>
+              <th>Date</th>
+              <th>Category</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -109,19 +109,37 @@ export default function Dashboard() {
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.employee_id}</td>
-                  <td>{item.vendor || 'Pending'}</td>
+                  <td>{item.vendor}</td>
                   <td>{item.amount || '0.00'}</td>
-                  <td><span className={`badge bg-${item.decision === 'APPROVED' ? 'success' : 'warning'}`}>{item.decision}</span></td>
+                  <td>{item.date}</td>
+                  <td>{EXPENSE_CATEGORIES?.[item.category]?.['label']}</td>
+                  <td>
+                    <div className="d-flex align-items-center gap-2">
+                      <span
+                        className={`badge bg-${item.status === "approved" ? "success" : "warning"
+                          }`}
+                      >
+                        {AUDIT_STATUS?.[item.status]?.label}
+                      </span>
+
+                      <i
+                        className="bi bi-eye cursor-pointer"
+                        title="View details"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleView(item)}
+                      ></i>
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">No records found</td>
+                <td colSpan="7" className="text-center py-4 text-muted">No records found</td>
               </tr>
             )}
           </tbody>
         </Table>
-      )}
+      }
     </div>
   );
 }
