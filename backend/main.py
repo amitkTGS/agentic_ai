@@ -1,7 +1,7 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File,Form
 import shutil
 from database import Base, engine, SessionLocal
-from models import Expense
+from models import Expense, ExpenseAnalysisResults
 from ocr import run_ocr
 from extraction_agent import extract_fields
 from rules_engine import validate_rules
@@ -9,67 +9,139 @@ from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
 from decision_agent import decide
 import json
+from ExpenseFilters import ExpenseFilters
+from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+
 
 Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],     # Allow specific origins
+    allow_credentials=True,    # Allow cookies and auth headers
+    allow_methods=["*"],       # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],
+)
+
 @app.post("/process")
-async def process_expense(employee_id: str, file: UploadFile = File(...)):
+async def process_expense(file: UploadFile = File(...),form_data:str=Form(...)):
+    # return {
+    #     "expense_id": 2,
+    #     }
+    try:
+        file_path = f"{file.filename}"
+        file_extension = Path(file.filename).suffix.lstrip(".")
 
-    # Save receipt
-    file_path = f"receipts/{file.filename}"
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        # import ipdb;ipdb.set_trace();
+        form = json.loads(form_data)
+        emp_id = form.get('employeeId')
+        # 1. OCR
+        ocr_text = run_ocr(file_path,file_extension)
+        
 
-    # 1. OCR
-    ocr_text = run_ocr(file_path)
+        # 2. Extraction Agent
+        # extracted = json.loads(extract_fields(file_path))
+        extracted = json.loads(extract_fields(ocr_text))
+        # extracted = json.loads('{"category":"Food","total_amount":813,"vendor":"biyani zone","date":"2025-01-06"}')
+        # print(extracted)
+        # import ipdb;ipdb.set_trace()
 
-    # 2. Extraction Agent
-    extracted = json.loads(extract_fields(ocr_text))
+        # 3. Rules
+        violations = validate_rules(extracted)
 
-    # 3. Rules
-    violations = validate_rules(extracted)
+        # 4. Duplicate Check
+        db = SessionLocal()
+        previous = db.query(Expense).all()
+        dup_prob = duplicate_probability(extracted, previous)
 
-    # 4. Duplicate Check
+        # 5. Risk
+        risk_level, risk_score = compute_risk(violations, dup_prob)
+
+        # 6. Decision
+        decision, explanation = decide(risk_level)
+        # Save expense to DB
+        expense = Expense(
+            employee_id=emp_id,
+            vendor=extracted.get("vendor", ''),
+            total_amount=extracted.get("total_amount", ''),
+            date=extracted.get("date", ''),
+            status=decision,
+            category=extracted.get("category", ''),
+            subcategory=extracted.get("subcategory", ''),
+            payment_mode=extracted.get("payment_mode", ''),
+            receipt_url=file_path
+        )
+
+        db.add(expense)
+        db.commit()          
+        db.refresh(expense)  
+        
+        exp_analysis = ExpenseAnalysisResults(
+            expense_id=expense.id,
+            ocr_text=ocr_text,
+            extracted=json.dumps(extracted) if extracted else None,
+            violations=json.dumps(violations) if violations else None,
+            duplicate_probability=dup_prob,
+            risk_level=risk_level,
+            risk_score=risk_score,
+            decision=decision,
+            explanation=explanation
+        )
+        
+        db.add(exp_analysis)
+        db.commit()
+        db.refresh(exp_analysis)
+
+        return {
+            "expense_id": expense.id,
+        }
+    except Exception as e:
+        print(e)
+
+
+@app.post("/expenses")
+async def list_expenses(filters: ExpenseFilters = ExpenseFilters()):
     db = SessionLocal()
-    previous = db.query(Expense).all()
-    dup_prob = duplicate_probability(extracted, previous)
+    query = db.query(Expense)
+    if filters.category and filters.category != '':
+        query = query.filter(Expense.category == filters.category)
 
-    # 5. Risk
-    risk_level, risk_score = compute_risk(violations, dup_prob)
+    if filters.start_date and filters.start_date != '':
+        query = query.filter(Expense.date >= filters.start_date)
 
-    # 6. Decision
-    decision, explanation = decide(risk_level)
+    if filters.end_date and filters.end_date != '':
+        query = query.filter(Expense.date <= filters.end_date)
 
-    # Save expense to DB
-    exp = Expense(
-        employee_id=employee_id,
-        vendor=extracted["vendor"],
-        amount=extracted["amount"],
-        date=extracted["date"],
-        category=extracted["category"],
-        subcategory=extracted.get("subcategory"),
-        payment_mode=extracted.get("payment_mode"),
-        receipt_url=file_path
-    )
-    db.add(exp)
+    return query.all()
+
+@app.get('/expense/{id}')
+def get_expense(id:int):
+    db = SessionLocal()
+    expense_analysis = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.expense_id == id).first()
+    return expense_analysis
+    
+@app.delete("/expense/approve/{id}")
+def approve_expense(id: int):
+    db = SessionLocal()
+    expense = db.query(Expense).filter(Expense.id == id).first()
+    expense.status = "approved"
     db.commit()
-    db.refresh(exp)
 
-    return {
-        "expense_id": exp.id,
-        "ocr_text": ocr_text,
-        "extracted": extracted,
-        "violations": violations,
-        "duplicate_probability": dup_prob,
-        "risk_level": risk_level,
-        "risk_score": risk_score,
-        "decision": decision,
-        "explanation": explanation
-    }
+    return {"message": "Expense approved"}
+    
 
-@app.get("/expenses")
-def list_expenses():
+@app.delete('/expense/{expense_id}')
+async def delete_record(expense_id:int):
     db = SessionLocal()
-    return db.query(Expense).all()
+    expense = db.query(Expense).filter(Expense.id == expense_id).first()
+    expense
+    db.delete(expense)
+    db.commit()
+    return {"message": "Expense deleted successfully"}
+
 
