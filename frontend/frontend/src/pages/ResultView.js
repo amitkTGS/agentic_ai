@@ -34,9 +34,9 @@ export default function ResultView() {
     navigate("/dashboard"); // change to your listing route
   };
 
-  const handleApprove = async () => {
+  const handleApprove = async (status) => {
     try {
-      await auditService.approveExpense(data.expense_id);
+      await auditService.approveExpense(data.expense_id, status);
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
@@ -52,7 +52,7 @@ export default function ResultView() {
         <h2 className="mb-0">Audit Results</h2>
       </div>
 
-      <Row>
+      <Row className='mt-2'>
         <Col lg={4}>
           <Card className="shadow-sm mb-4">
             <Card.Header className="fw-bold">Risk Assessment</Card.Header>
@@ -71,13 +71,43 @@ export default function ResultView() {
               />
               <div className="text-start">
                 <strong>Decision:</strong>
-                <span className={`ms-2 fw-bold text-${data?.decision === 'approved' ? 'success' : 'danger'}`}>
-                  {AUDIT_STATUS[data?.decision]?.['label']}
+                <span className={`ms-2 px-2 py-1 rounded bg-${AUDIT_STATUS[data?.decision]?.variant} bg-opacity-10 text-${AUDIT_STATUS[data?.decision]?.variant}`}>
+                  {AUDIT_STATUS[data?.decision]?.label}
                 </span>
-                {data?.decision === "flagged" && (
-                  <Button variant="success" onClick={handleApprove}>
-                    <i className="bi bi-check-circle me-2"></i> Approve
-                  </Button>
+                {["flagged", "hold"].includes(data?.decision) && (
+                  <div className="d-flex align-items-center gap-1 mt-3 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline-success"
+                      className="d-flex align-items-center gap-1 px-3"
+                      onClick={() => handleApprove("approved")}
+                    >
+                      <i className="bi bi-check-circle"></i>
+                      <span className="fw-semibold">Approve</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      className="d-flex align-items-center gap-1 px-3"
+                      onClick={() => handleApprove("rejected")}
+                    >
+                      <i className="bi bi-x-circle"></i>
+                      <span className="fw-semibold">Reject</span>
+                    </Button>
+
+                    {data?.decision === "flagged" && (
+                      <Button
+                        size="sm"
+                        variant="outline-warning"
+                        className="d-flex align-items-center gap-1 px-3"
+                        onClick={() => handleApprove("hold")}
+                      >
+                        <i className="bi bi-pause-circle"></i>
+                        <span className="fw-semibold">On Hold</span>
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </Card.Body>

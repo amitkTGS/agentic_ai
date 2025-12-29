@@ -110,14 +110,13 @@ export default function Dashboard() {
                   <td>{index + 1}</td>
                   <td>{item.employee_id}</td>
                   <td>{item.vendor}</td>
-                  <td>{item.amount || '0.00'}</td>
+                  <td>{item.total_amount || '0.00'}</td>
                   <td>{item.date}</td>
                   <td>{EXPENSE_CATEGORIES?.[item.category]?.['label']}</td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       <span
-                        className={`badge bg-${item.status === "approved" ? "success" : "warning"
-                          }`}
+                        className={`badge bg-${AUDIT_STATUS?.[item.status]?.variant}`}
                       >
                         {AUDIT_STATUS?.[item.status]?.label}
                       </span>

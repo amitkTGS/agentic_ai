@@ -1,3 +1,4 @@
+from common import CATEGORIES, fallback_value
 from fastapi import FastAPI, UploadFile, File,Form
 import shutil
 from database import Base, engine, SessionLocal
@@ -28,9 +29,6 @@ app.add_middleware(
 
 @app.post("/process")
 async def process_expense(file: UploadFile = File(...),form_data:str=Form(...)):
-    # return {
-    #     "expense_id": 2,
-    #     }
     try:
         file_path = f"{file.filename}"
         file_extension = Path(file.filename).suffix.lstrip(".")
@@ -42,16 +40,24 @@ async def process_expense(file: UploadFile = File(...),form_data:str=Form(...)):
         emp_id = form.get('employeeId')
         # 1. OCR
         ocr_text = run_ocr(file_path,file_extension)
-        
 
         # 2. Extraction Agent
         # extracted = json.loads(extract_fields(file_path))
         extracted = json.loads(extract_fields(ocr_text))
         # extracted = json.loads('{"category":"Food","total_amount":813,"vendor":"biyani zone","date":"2025-01-06"}')
         # print(extracted)
-        # import ipdb;ipdb.set_trace()
-
         # 3. Rules
+        extracted_category = extracted.get("category")
+        if extracted_category:
+            category_key = str(extracted_category).strip().lower()
+            extracted_category = CATEGORIES.get(category_key)
+        else:
+            extracted_category = None
+        # convert the extracted_cate
+        extracted_date = extracted.get("date")
+        extracted["category"] = fallback_value(extracted_category, form.get("category"))
+        extracted["date"] = fallback_value(extracted_date, form.get("expenseDate"))
+
         violations = validate_rules(extracted)
 
         # 4. Duplicate Check
@@ -125,13 +131,15 @@ def get_expense(id:int):
     expense_analysis = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.expense_id == id).first()
     return expense_analysis
     
-@app.delete("/expense/approve/{id}")
-def approve_expense(id: int):
+@app.get("/expense/{id}/{status}")
+def approve_expense(id: int,status:str):
     db = SessionLocal()
     expense = db.query(Expense).filter(Expense.id == id).first()
-    expense.status = "approved"
+    expense.status = status
     db.commit()
-
+    expense_analytics = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.expense_id == id).first()
+    expense_analytics.decision = status
+    db.commit()
     return {"message": "Expense approved"}
     
 

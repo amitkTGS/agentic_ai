@@ -41,11 +41,13 @@ def extract_fields(ocr_text: str):
 
                 Return JSON ONLY in this format  and strictly don't add \n:
                 {{
-                "category": "Food | Travel | Shopping | Utilities | Medical | Other | null",
+                "category": "Food | Travel | Accommodation | Office Supplies | Miscellaneous | Other | null",
                 "total_amount": number | null,
                 "vendor": "string | null",
-                "date": "string | null"
+                "date": "DD-MM-YYYY | null",
+                "payment_mode":"online | offline | null"
                 }}
+                Constraint: The "date" must be converted to DD-MM-YYYY format (e.g., 01-12-2022).
 
                 OCR TEXT:
                 <<<

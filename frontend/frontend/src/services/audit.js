@@ -10,8 +10,8 @@ const auditService = {
     getExpenseData(id){
         return auditApi.get('/expense/'+id);
     },
-    approveExpense(id){
-        return auditApi.delete('expense/approve/'+id);
+    approveExpense(id,status){
+        return auditApi.get('expense/'+id+'/'+status);
     }
 }
 export default auditService;    
