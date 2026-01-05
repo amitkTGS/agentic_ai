@@ -10,7 +10,7 @@ export const EXPENSE_CATEGORIES = {
     travel: { key: 'travel', label: 'Travel' },
     office_supplies: { key: 'office_supplies', label: 'Office Supplies' },
     accommodation:{key:'accommodation',label:'Accommodation'},
-    miscellaneous:{key:'miscellaneous',label:'miscellaneous'},
+    miscellaneous:{key:'miscellaneous',label:'Miscellaneous'},
     other: { key: 'other', label: 'Others' },
 };
 

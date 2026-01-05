@@ -49,11 +49,11 @@ const ocrFieldAccuracyData = [
   { field: "Currency", correct: 98, incorrect: 2 },
 ];
 const extractionAccuracyData = [
-  { field: "Amount (30%)", score: 27 },
-  { field: "Date (20%)", score: 18 },
-  { field: "Vendor (20%)", score: 17 },
-  { field: "Category (20%)", score: 16 },
-  { field: "Currency (10%)", score: 10 },
+  { field: "Amount", score: 27 },
+  { field: "Date", score: 18 },
+  { field: "Vendor", score: 17 },
+  { field: "Category", score: 16 },
+  { field: "Currency", score: 10 },
 ];
 const policyRuleData = [
   { result: "Correct Detection", count: 190 },
@@ -133,7 +133,7 @@ const fileScorecard = [
   },
 ];
 
-const COLORS = ["#0d6efd", "#198754", "#dc3545"];
+const COLORS = ["#0d6efd", "#00BF00", "#dc3545"];
 
 /* =========================
    COMPONENT
@@ -165,11 +165,19 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>OCR Field-Level Accuracy</h6>
               <ResponsiveContainer height={250}>
-                <BarChart data={ocrFieldAccuracyData}>
-                  <XAxis dataKey="field" />
+                <BarChart
+                  data={ocrFieldAccuracyData}
+                  margin={{ top: 0, right: 0, left: 0, bottom: 10 }}
+                >
+                  <XAxis
+                    dataKey="field"
+                    interval={0}          
+                    angle={-20}            
+                    textAnchor="end"
+                  />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="correct" stackId="a" fill="#198754" />
+                  <Bar dataKey="correct" stackId="a" fill="#00BF00" />
                   <Bar dataKey="incorrect" stackId="a" fill="#dc3545" />
                 </BarChart>
               </ResponsiveContainer>
@@ -177,6 +185,7 @@ export default function ScoreCard() {
                 Clean PDFs ≥95%, Images ≥85%, Blurry ≥65%
               </small>
             </Card.Body>
+
           </Card>
         </Col>
 
@@ -185,9 +194,15 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>LLM Extraction Accuracy (Weighted)</h6>
               <ResponsiveContainer height={250}>
-                <BarChart data={extractionAccuracyData}>
-                  <XAxis dataKey="field" />
+                <BarChart data={extractionAccuracyData}  margin={{ top: 0, right: 0, left: 0, bottom: 30 }}>
+                   <XAxis
+                    dataKey="field"
+                    interval={0}          
+                    angle={-20}            
+                    textAnchor="end"
+                  />
                   <YAxis />
+                  
                   <Tooltip />
                   <Bar dataKey="score" fill="#0d6efd" />
                 </BarChart>
@@ -205,7 +220,7 @@ export default function ScoreCard() {
               <ResponsiveContainer height={250}>
                 <PieChart>
                   <Pie data={policyRuleData} dataKey="count" label>
-                    <Cell fill="#198754" />
+                    <Cell fill="#00BF00" />
                     <Cell fill="#ffc107" />
                     <Cell fill="#dc3545" />
                   </Pie>
@@ -247,7 +262,10 @@ export default function ScoreCard() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#0d6efd" />
+                  <Bar dataKey="value">
+                    <Cell fill="#0d6efd" />
+                    <Cell fill="#ffc107" />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </Card.Body>
@@ -261,7 +279,7 @@ export default function ScoreCard() {
               <ResponsiveContainer height={250}>
                 <PieChart>
                   <Pie data={anomalyData} dataKey="value" label>
-                    <Cell fill="#198754" />
+                    <Cell fill="#00BF00" />
                     <Cell fill="#dc3545" />
                   </Pie>
                   <Tooltip />
@@ -283,7 +301,7 @@ export default function ScoreCard() {
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="ai" fill="#0d6efd" />
-                  <Bar dataKey="sme" fill="#198754" />
+                  <Bar dataKey="sme" fill="#00BF00" />
                 </BarChart>
               </ResponsiveContainer>
             </Card.Body>
@@ -295,11 +313,15 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>HITL Escalation Funnel</h6>
               <ResponsiveContainer height={280}>
-                <BarChart data={hitlData} layout="vertical">
+                <BarChart data={hitlData} layout="vertical" margin={{ top: 0, right: 0, left: 20, bottom: 0 }}>
                   <XAxis type="number" />
                   <YAxis dataKey="stage" type="category" />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#6610f2" />
+                  <Bar dataKey="count">
+                    <Cell fill="#00BF00" />
+                    <Cell fill="#ffc107" />
+                    <Cell fill="#dc3545" />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </Card.Body>
@@ -315,7 +337,11 @@ export default function ScoreCard() {
               <XAxis dataKey="confidence" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="corrected" fill="#dc3545" />
+              <Bar dataKey="corrected">
+                <Cell fill="#00BF00" />
+                <Cell fill="#ffc107" />
+                <Cell fill="#dc3545" />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Card.Body>

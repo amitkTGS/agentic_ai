@@ -29,7 +29,7 @@ function AppContent() {
             <Nav className="ms-auto">
               <Nav.Link as={Link} to={'/'}>Dashboard</Nav.Link>
               <Nav.Link as={Link} to={'/add_audit'}>New Audit</Nav.Link>
-              <Nav.Link as={Link} to={'/score_card'}>Score Card</Nav.Link>
+              <Nav.Link as={Link} to={'/score_card'}>Metrics</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

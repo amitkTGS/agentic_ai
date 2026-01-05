@@ -12,6 +12,9 @@ const auditService = {
     },
     approveExpense(id,status){
         return auditApi.get('expense/'+id+'/'+status);
+    },
+    deleteExpense(id){
+        return auditApi.delete('expense/'+id);
     }
 }
 export default auditService;    

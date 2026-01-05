@@ -147,8 +147,18 @@ def approve_expense(id: int,status:str):
 async def delete_record(expense_id:int):
     db = SessionLocal()
     expense = db.query(Expense).filter(Expense.id == expense_id).first()
-    expense
     db.delete(expense)
+    db.commit()
+    expense_analaysis = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.expense_id == expense_id).first()
+    db.delete(expense_analaysis)
+    db.commit()
+    return {"message": "Expense deleted successfully"}
+
+@app.delete('/expense_analysis/{id}')
+async def delete_record(id:int):
+    db = SessionLocal()
+    expense_analaysis = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.id == id).first()
+    db.delete(expense_analaysis)
     db.commit()
     return {"message": "Expense deleted successfully"}
 

@@ -59,16 +59,16 @@ export default function ResultView() {
             <Card.Body className="text-center">
               <div className="mb-3">
                 <h6 className="text-muted">Risk Score</h6>
-                <h2 className={`text-${getRiskColor(data?.risk_level)}`}>{data?.risk_score}/100</h2>
+                <h2 className={`text-${getRiskColor(data?.risk_level)}`}>{data?.risk_score.toFixed(3)}</h2>
                 <Badge bg={getRiskColor(data?.risk_level)} className="fs-6">
                   {data?.risk_level?.toUpperCase()} RISK
                 </Badge>
               </div>
-              <ProgressBar
+              {/* <ProgressBar
                 variant={getRiskColor(data?.risk_level)}
                 now={data?.risk_score}
                 className="mb-3"
-              />
+              /> */}
               <div className="text-start">
                 <strong>Decision:</strong>
                 <span className={`ms-2 px-2 py-1 rounded bg-${AUDIT_STATUS[data?.decision]?.variant} bg-opacity-10 text-${AUDIT_STATUS[data?.decision]?.variant}`}>
@@ -134,12 +134,22 @@ export default function ResultView() {
             <Card.Header className="fw-bold">Extracted Details</Card.Header>
             <Card.Body>
               <Row>
-                {Object.entries(data?.extracted || {}).map(([key, value]) => (
-                  <Col md={6} key={key} className="mb-3">
-                    <label className="text-muted small text-uppercase fw-bold d-block">{key.replace('_', ' ')}</label>
-                    <span className="fs-5">{value || 'N/A'}</span>
-                  </Col>
-                ))}
+                <Col md={6} className="mb-3">
+                  <label className="text-muted small text-uppercase fw-bold d-block">Category</label>
+                  <span className="fs-5">{EXPENSE_CATEGORIES[data?.extracted?.category]?.label || 'N/A'}</span>
+                </Col>
+                <Col md={6} className="mb-3">
+                  <label className="text-muted small text-uppercase fw-bold d-block">Total Amount</label>
+                  <span className="fs-5">{data?.extracted?.total_amount || 'N/A'}</span>
+                </Col>
+                <Col md={6} className="mb-3">
+                  <label className="text-muted small text-uppercase fw-bold d-block">Vendor</label>
+                  <span className="fs-5">{data?.extracted?.vendor || 'N/A'}</span>
+                </Col>
+                <Col md={6} className="mb-3">
+                  <label className="text-muted small text-uppercase fw-bold d-block">Expense Date</label>
+                  <span className="fs-5">{data?.extracted?.date || 'N/A'}</span>
+                </Col>
                 <Col md={6}>
                   <label className="text-muted small text-uppercase fw-bold d-block">Duplicate Probability</label>
                   <span className="fs-5">{(data?.duplicate_probability * 100).toFixed(1)}%</span>
