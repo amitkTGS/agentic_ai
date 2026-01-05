@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { LoaderProvider } from "./context/LoaderContext";
 import { registerLoader } from "./services/loaderStore";
 import ResultView from "./pages/ResultView";
+import ScoreCard from "./pages/ScoreCard";
 function AppContent() {
   const { setLoading } = useLoader();
 
@@ -28,7 +29,7 @@ function AppContent() {
             <Nav className="ms-auto">
               <Nav.Link as={Link} to={'/'}>Dashboard</Nav.Link>
               <Nav.Link as={Link} to={'/add_audit'}>New Audit</Nav.Link>
-              <Nav.Link as={Link} to={'/reports'}>Score Card</Nav.Link>
+              <Nav.Link as={Link} to={'/score_card'}>Metrics</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -38,6 +39,7 @@ function AppContent() {
           <Route path="/" element={<Dashboard />}/>
           <Route path ="/add_audit" element={<Upload />}/>
           <Route path ="/result_view/:id" element={<ResultView />}/>
+          <Route path="/score_card" element={<ScoreCard/>} />
           <Route path="*" element={<Navigate to={'/'} replace />} />
         </Routes>
       </Container>

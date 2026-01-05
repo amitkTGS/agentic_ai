@@ -31,8 +31,18 @@ export default function Dashboard() {
     isFirstRender.current = false;
   }, [fetchFilteredData]);
 
-  const handleView=(item)=>{
-    navigate('/result_view/'+item.id)
+  const handleView = (item) => {
+    navigate('/result_view/' + item.id)
+  }
+  const handleDelete  = async (id)=>{
+    try{
+      const result =  await auditService.deleteExpense(id);
+      if(result){
+          fetchFilteredData();
+      }
+    }catch(err){
+      console.log(err)
+    }
   }
 
   return (
@@ -76,7 +86,7 @@ export default function Dashboard() {
             <Form.Label className="small fw-bold">Start Date</Form.Label>
             <Form.Control
               type="date"
-              onChange={e => setFilters({ ...filters, startDate: e.target.value })}
+              onChange={e => setFilters({ ...filters, start_date: e.target.value })}
             />
           </Col>
 
@@ -84,7 +94,7 @@ export default function Dashboard() {
             <Form.Label className="small fw-bold">End Date</Form.Label>
             <Form.Control
               type="date"
-              onChange={e => setFilters({ ...filters, endDate: e.target.value })}
+              onChange={e => setFilters({ ...filters, end_date: e.target.value })}
             />
           </Col>
         </Row>
@@ -110,24 +120,30 @@ export default function Dashboard() {
                   <td>{index + 1}</td>
                   <td>{item.employee_id}</td>
                   <td>{item.vendor}</td>
-                  <td>{item.amount || '0.00'}</td>
+                  <td>{item.total_amount || '0.00'}</td>
                   <td>{item.date}</td>
                   <td>{EXPENSE_CATEGORIES?.[item.category]?.['label']}</td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       <span
-                        className={`badge bg-${item.status === "approved" ? "success" : "warning"
-                          }`}
+                        className={`badge bg-${AUDIT_STATUS?.[item.status]?.variant}`}
                       >
                         {AUDIT_STATUS?.[item.status]?.label}
                       </span>
 
                       <i
-                        className="bi bi-eye cursor-pointer"
+                        className="bi bi-eye"
                         title="View details"
                         style={{ cursor: "pointer" }}
                         onClick={() => handleView(item)}
                       ></i>
+
+                      {/* <i
+                        className="bi bi-trash text-danger"
+                        title="Delete"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleDelete(item.id)}
+                      ></i> */}
                     </div>
                   </td>
                 </tr>

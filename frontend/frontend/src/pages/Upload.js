@@ -20,10 +20,10 @@ export default function Upload() {
 
   const handleProcess = async(e) => {
     e.preventDefault();
-    // if (!file || !formData.employeeId || !formData.expenseDate) {
-    //   setError('Please fill in all mandatory fields and upload a valid file.')
-    //   return;
-    // }
+    if (!file || !formData.employeeId || !formData.expenseDate) {
+      setError('Please fill in all mandatory fields and upload a valid file.')
+      return;
+    }
     var formres = new FormData();
     formres.append('file', file);
     formres.append('form_data', JSON.stringify(formData));
@@ -131,7 +131,6 @@ export default function Upload() {
                   ))}
                 </Form.Select>
               </Form.Group>
-              {loading?'asdf':'asdfdsafadsasdf'}
               <div className="d-grid">
                 <Button variant="primary" type="submit" size="lg" disabled={loading}>
                   {loading ? 'Processing...' : 'Process Expense'}
