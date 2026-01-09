@@ -13,6 +13,8 @@ import json
 from ExpenseFilters import ExpenseFilters
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
+from schemas import Metrics, MetricsResponse
+from fastapi import Query
 
 
 Base.metadata.create_all(bind=engine)
@@ -161,5 +163,61 @@ async def delete_record(id:int):
     db.delete(expense_analaysis)
     db.commit()
     return {"message": "Expense deleted successfully"}
+
+
+
+from calculations import (
+    calculate_cas,
+    ocr_accuracy,
+    extraction_accuracy,
+    policy_accuracy,
+    duplicate_score,
+    decision_accuracy,
+)
+from datastore import (
+    OCR_DATA,
+    EXTRACTION_DATA,
+    POLICY_DATA,
+    DUPLICATE_DATA,
+    HITL_DATA,
+)
+
+
+# @app.get("/api/metrics/summary", response_model=MetricsResponse)
+# def metrics_summary(mode: str = Query("demo", enum=["demo", "live"])):
+#     # Later: switch to DB if mode == live
+#     metrics = Metrics(
+#         ocr=ocr_accuracy(OCR_DATA),
+#         extraction=extraction_accuracy(EXTRACTION_DATA),
+#         policy=policy_accuracy(POLICY_DATA),
+#         duplicate=duplicate_score(DUPLICATE_DATA),
+#         decision=decision_accuracy(HITL_DATA),
+#     )
+
+#     return MetricsResponse(
+#         metrics=metrics,
+#         cas=calculate_cas(metrics.dict())
+#     )
+
+
+@app.get("/api/metrics/details")
+def metrics_details():
+
+    metrics = Metrics(
+        ocr=ocr_accuracy(OCR_DATA),
+        extraction=extraction_accuracy(EXTRACTION_DATA),
+        policy=policy_accuracy(POLICY_DATA),
+        duplicate=duplicate_score(DUPLICATE_DATA),
+        decision=decision_accuracy(HITL_DATA),
+    )
+    return {
+        "metrics": metrics,
+        "ocr": OCR_DATA,
+        "extraction": EXTRACTION_DATA,
+        "policy": POLICY_DATA,
+        "duplicate": DUPLICATE_DATA,
+        "hitl": HITL_DATA,
+    }
+
 
 
