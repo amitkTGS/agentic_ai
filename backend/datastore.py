@@ -29,3 +29,61 @@ HITL_DATA = [
     {"stage": "Flagged", "count": 120},
     {"stage": "Escalated", "count": 60},
 ]
+
+TAXONOMY_DATA = [
+    { "name": "Correct L1 & L2", "value": 70 },
+    { "name": "Correct L1 Only", "value": 20 },
+    { "name": "Incorrect", "value": 10 },
+]
+ANOMALY_DATA = [
+    { "name": "Detected", "value": 75 },
+    { "name": "Missed", "value": 25 },
+]
+RISK_BAND_DATA  =[
+    { "band": "Low", "ai": 40, "sme": 42 },
+    { "band": "Medium", "ai": 35, "sme": 33 },
+    { "band": "High", "ai": 25, "sme": 25 },
+]
+CONFIDENCE_DATA = [
+    { "confidence": "High", "corrected": 5 },
+    { "confidence": "Medium", "corrected": 20 },
+    { "confidence": "Low", "corrected": 75 },
+]
+FILE_SCORE_CARD_DATA = [
+    {
+        "file": "Taxi Normal",
+        "ocr": 98,
+        "extraction": 95,
+        "rules": 100,
+        "dup": "N/A",
+        "risk": 90,
+        "decision": "✔",
+    },
+    {
+        "file": "Taxi Duplicate",
+        "ocr": 96,
+        "extraction": 94,
+        "rules": 100,
+        "dup": "✔",
+        "risk": 88,
+        "decision": "✔",
+    },
+    {
+        "file": "Foreign Currency",
+        "ocr": 92,
+        "extraction": 90,
+        "rules": 95,
+        "dup": "N/A",
+        "risk": 85,
+        "decision": "✔",
+    },
+    {
+        "file": "Blurry Receipt",
+        "ocr": 65,
+        "extraction": 70,
+        "rules": 90,
+        "dup": "N/A",
+        "risk": 75,
+        "decision": "✔",
+    },
+]

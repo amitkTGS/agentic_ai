@@ -15,6 +15,9 @@ const auditService = {
     },
     deleteExpense(id){
         return auditApi.delete('expense/'+id);
+    },
+    getMetrics(){
+        return auditApi.get('api/metrics/details')
     }
 }
 export default auditService;    
