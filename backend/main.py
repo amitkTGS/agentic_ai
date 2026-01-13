@@ -180,6 +180,11 @@ from datastore import (
     POLICY_DATA,
     DUPLICATE_DATA,
     HITL_DATA,
+     ANOMALY_DATA,
+    CONFIDENCE_DATA,
+    FILE_SCORE_CARD_DATA,
+    RISK_BAND_DATA,
+    TAXONOMY_DATA,
 )
 
 
@@ -217,6 +222,11 @@ def metrics_details():
         "policy": POLICY_DATA,
         "duplicate": DUPLICATE_DATA,
         "hitl": HITL_DATA,
+        "taxonomy": TAXONOMY_DATA,
+        "anamoly":ANOMALY_DATA,
+        "risk_band":RISK_BAND_DATA,
+        "confidence":CONFIDENCE_DATA,
+        "file_score_card":FILE_SCORE_CARD_DATA
     }
 
 

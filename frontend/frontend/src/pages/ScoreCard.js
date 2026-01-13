@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -22,6 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import auditService from "../services/audit";
 
 const calculateCAS = (m) =>
   (
@@ -31,117 +32,24 @@ const calculateCAS = (m) =>
     m.duplicate * 0.15 +
     m.decision * 0.1
   ).toFixed(2);
-
-const DEMO_METRICS = {
-  ocr: 92,
-  extraction: 88,
-  policy: 97,
-  duplicate: 85,
-  decision: 90,
-};
-const LIVE_METRICS = DEMO_METRICS;
-
-
-const ocrFieldAccuracyData = [
-  { field: "Vendor", correct: 92, incorrect: 8 },
-  { field: "Date", correct: 90, incorrect: 10 },
-  { field: "Amount", correct: 95, incorrect: 5 },
-  { field: "Currency", correct: 98, incorrect: 2 },
-];
-const extractionAccuracyData = [
-  { field: "Amount", score: 27 },
-  { field: "Date", score: 18 },
-  { field: "Vendor", score: 17 },
-  { field: "Category", score: 16 },
-  { field: "Currency", score: 10 },
-];
-const policyRuleData = [
-  { result: "Correct Detection", count: 190 },
-  { result: "Missed Violation", count: 6 },
-  { result: "False Positive", count: 4 },
-];
-const taxonomyData = [
-  { name: "Correct L1 & L2", value: 70 },
-  { name: "Correct L1 Only", value: 20 },
-  { name: "Incorrect", value: 10 },
-];
-
-const duplicateMetrics = [
-  { name: "Precision", value: 85 },
-  { name: "Recall", value: 80 },
-];
-
-const anomalyData = [
-  { name: "Detected", value: 75 },
-  { name: "Missed", value: 25 },
-];
-
-const riskBandData = [
-  { band: "Low", ai: 40, sme: 42 },
-  { band: "Medium", ai: 35, sme: 33 },
-  { band: "High", ai: 25, sme: 25 },
-];
-
-const hitlData = [
-  { stage: "Auto Approved", count: 420 },
-  { stage: "Flagged", count: 120 },
-  { stage: "Escalated", count: 60 },
-];
-
-const confidenceData = [
-  { confidence: "High", corrected: 5 },
-  { confidence: "Medium", corrected: 20 },
-  { confidence: "Low", corrected: 75 },
-];
-
-const fileScorecard = [
-  {
-    file: "Taxi Normal",
-    ocr: 98,
-    extraction: 95,
-    rules: 100,
-    dup: "N/A",
-    risk: 90,
-    decision: "✔",
-  },
-  {
-    file: "Taxi Duplicate",
-    ocr: 96,
-    extraction: 94,
-    rules: 100,
-    dup: "✔",
-    risk: 88,
-    decision: "✔",
-  },
-  {
-    file: "Foreign Currency",
-    ocr: 92,
-    extraction: 90,
-    rules: 95,
-    dup: "N/A",
-    risk: 85,
-    decision: "✔",
-  },
-  {
-    file: "Blurry Receipt",
-    ocr: 65,
-    extraction: 70,
-    rules: 90,
-    dup: "N/A",
-    risk: 75,
-    decision: "✔",
-  },
-];
-
 const COLORS = ["#0d6efd", "#00BF00", "#dc3545"];
 
 /* =========================
    COMPONENT
 ========================= */
 export default function ScoreCard() {
-  const [demoMode, setDemoMode] = useState(true);
-  const metrics = demoMode ? DEMO_METRICS : LIVE_METRICS;
-  const CAS = calculateCAS(metrics);
+  const [metrics,setMetrics] = useState()
+  const [cas,setCas] = useState(0)
+  useEffect(()=>{
+    const getData = async ()=>{
+      const result = await auditService.getMetrics();
+      if (result.data) {
+          setMetrics(result.data);
+          setCas(calculateCAS(result.data.metrics));
+      }
+    }
+    getData();
+  },[])
 
   return (
     <Container fluid className="p-4">
@@ -149,10 +57,10 @@ export default function ScoreCard() {
       <Card className="shadow-sm mb-4">
         <Card.Body>
           <h6>Composite Accuracy Score (CAS)</h6>
-          <h2 className="fw-bold text-primary">{CAS}%</h2>
+          <h2 className="fw-bold text-primary">{cas}%</h2>
           <ProgressBar
-            now={CAS}
-            variant={CAS >= 80 ? "success" : "danger"}
+            now={cas}
+            variant={cas >= 80 ? "success" : "danger"}
           />
           <small className="text-muted">Target ≥ 80%</small>
         </Card.Body>
@@ -166,7 +74,7 @@ export default function ScoreCard() {
               <h6>OCR Field-Level Accuracy</h6>
               <ResponsiveContainer height={250}>
                 <BarChart
-                  data={ocrFieldAccuracyData}
+                  data={metrics?.ocr}
                   margin={{ top: 0, right: 0, left: 0, bottom: 10 }}
                 >
                   <XAxis
@@ -194,7 +102,7 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>LLM Extraction Accuracy (Weighted)</h6>
               <ResponsiveContainer height={250}>
-                <BarChart data={extractionAccuracyData}  margin={{ top: 0, right: 0, left: 0, bottom: 30 }}>
+                <BarChart data={metrics?.extraction}  margin={{ top: 0, right: 0, left: 0, bottom: 30 }}>
                    <XAxis
                     dataKey="field"
                     interval={0}          
@@ -219,7 +127,7 @@ export default function ScoreCard() {
               <h6>Policy Validation Accuracy</h6>
               <ResponsiveContainer height={250}>
                 <PieChart>
-                  <Pie data={policyRuleData} dataKey="count" label>
+                  <Pie data={metrics?.policy} dataKey="count" label>
                     <Cell fill="#00BF00" />
                     <Cell fill="#ffc107" />
                     <Cell fill="#dc3545" />
@@ -241,11 +149,16 @@ export default function ScoreCard() {
               <h6>Taxonomy Accuracy</h6>
               <ResponsiveContainer height={250}>
                 <PieChart>
-                  <Pie data={taxonomyData} dataKey="value" label>
-                    {taxonomyData.map((_, i) => (
+                  {metrics?.taxonomy ?(
+                  <Pie data={metrics?.taxonomy} dataKey="value" label>
+                    {(metrics?.taxonomy).map((_, i) => (
                       <Cell key={i} fill={COLORS[i]} />
                     ))}
                   </Pie>
+                  ):(
+                    <></>
+                  )}
+                 
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
@@ -258,7 +171,7 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>Duplicate Detection</h6>
               <ResponsiveContainer height={250}>
-                <BarChart data={duplicateMetrics}>
+                <BarChart data={metrics?.duplicate}>
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
@@ -278,7 +191,7 @@ export default function ScoreCard() {
               <h6>Anomaly Detection</h6>
               <ResponsiveContainer height={250}>
                 <PieChart>
-                  <Pie data={anomalyData} dataKey="value" label>
+                  <Pie data={metrics?.anamoly} dataKey="value" label>
                     <Cell fill="#00BF00" />
                     <Cell fill="#dc3545" />
                   </Pie>
@@ -296,7 +209,7 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>Risk Profiling (AI vs SME)</h6>
               <ResponsiveContainer height={280}>
-                <BarChart data={riskBandData}>
+                <BarChart data={metrics?.risk_band}>
                   <XAxis dataKey="band" />
                   <YAxis />
                   <Tooltip />
@@ -313,7 +226,7 @@ export default function ScoreCard() {
             <Card.Body>
               <h6>HITL Escalation Funnel</h6>
               <ResponsiveContainer height={280}>
-                <BarChart data={hitlData} layout="vertical" margin={{ top: 0, right: 0, left: 20, bottom: 0 }}>
+                <BarChart data={metrics?.hitl} layout="vertical" margin={{ top: 0, right: 0, left: 20, bottom: 0 }}>
                   <XAxis type="number" />
                   <YAxis dataKey="stage" type="category" />
                   <Tooltip />
@@ -333,7 +246,7 @@ export default function ScoreCard() {
         <Card.Body>
           <h6>Confidence Calibration</h6>
           <ResponsiveContainer height={250}>
-            <BarChart data={confidenceData}>
+            <BarChart data={metrics?.confidence}>
               <XAxis dataKey="confidence" />
               <YAxis />
               <Tooltip />
@@ -363,7 +276,7 @@ export default function ScoreCard() {
               </tr>
             </thead>
             <tbody>
-              {fileScorecard.map((r) => (
+              {metrics?.file_score_card.map((r) => (
                 <tr key={r.file}>
                   <td>{r.file}</td>
                   <td>{r.ocr}%</td>
