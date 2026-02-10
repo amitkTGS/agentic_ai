@@ -83,3 +83,47 @@ def extract_fields(ocr_text: str):
 
 #     print(response.output_text)
 
+def extract_fields_with_rag(ocr_text: str, policy_context: str) -> str:
+    prompt = f"""
+        You are an expense receipt extraction assistant.
+
+        ### Expense Policy Context (use this to reason):
+        {policy_context}
+
+        ### Task:
+        Extract structured data from the OCR text.
+
+        Return STRICT JSON ONLY.
+        Do NOT add explanations.
+        Do NOT add newlines.
+
+        Schema:
+        {{
+        "category": "Food | Travel | Accommodation | Office Supplies | Miscellaneous | Other | null",
+        "total_amount": number | null,
+        "vendor": "string | null",
+        "date": "DD-MM-YYYY | null",
+        "payment_mode": "online | offline | null"
+        }}
+
+        Rules:
+        - Convert date to DD-MM-YYYY
+        - Use policy context to choose correct category
+        - If unsure, return null
+
+        OCR TEXT:
+        <<<
+        {ocr_text}
+        >>>
+        """
+
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You extract receipts into JSON."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message.content

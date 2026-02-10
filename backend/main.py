@@ -15,7 +15,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from schemas import Metrics, MetricsResponse
 from fastapi import Query
-
+from rag import (
+    retrieve_policy_context,
+    store_expense_embedding,
+    semantic_duplicate_score
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -230,4 +234,100 @@ def metrics_details():
     }
 
 
+
+@app.get("/process_new")
+async def process_expense_new():
+    try:
+        ocr_text = "Biyani Zone\nTotal: 1813\nDate: 06-01-2025\nPaid via UPI"
+        policy_context = retrieve_policy_context(ocr_text)
+
+        # 2. Extraction Agent
+        extracted = json.loads(extract_fields_with_rag(ocr_text,policy_context))
+        # extracted = json.loads(extract_fields(ocr_text))
+        # extracted = json.loads('{"category":"Food","total_amount":813,"vendor":"biyani zone","date":"2025-01-06"}')
+        # 3. Rules
+        extracted_category = extracted.get("category")
+        if extracted_category:
+            category_key = str(extracted_category).strip().lower()
+            extracted_category = CATEGORIES.get(category_key)
+        else:
+            extracted_category = None
+        # convert the extracted_cate
+        extracted_date = extracted.get("date")
+        extracted["category"] = fallback_value(extracted_category, 'Food')
+        extracted["date"] = fallback_value(extracted_date, '2022-01-01')
+
+        violations = validate_rules(extracted)
+        print(extracted)
+        # 4. Duplicate Check
+        db = SessionLocal()
+        previous = db.query(Expense).all()
+        fuzzy_dup = duplicate_probability(extracted, previous)
+        semantic_dup = semantic_duplicate_score(ocr_text)
+        
+        dup_prob = max(fuzzy_dup, semantic_dup)
+        # 5. Risk
+        risk_level, risk_score = compute_risk(violations, dup_prob)
+
+        # 6. Decision
+        decision, explanation = decide(risk_level)
+        # Save expense to DB
+        expense = Expense(
+            employee_id=1011,
+            vendor=extracted.get("vendor", ''),
+            total_amount=extracted.get("total_amount", ''),
+            date=extracted.get("date", ''),
+            status=decision,
+            category=extracted.get("category", ''),
+            subcategory=extracted.get("subcategory", ''),
+            payment_mode=extracted.get("payment_mode", ''),
+            receipt_url='jhb'
+        )
+
+        db.add(expense)
+        db.commit()          
+        db.refresh(expense)  
+        
+        store_expense_embedding(
+            expense.id,
+            ocr_text,
+            {
+                "vendor": expense.vendor,
+                "amount": expense.total_amount,
+                "category": expense.category
+            }
+        )
+        
+        exp_analysis = ExpenseAnalysisResults(
+            expense_id=expense.id,
+            ocr_text=ocr_text,
+            extracted=json.dumps(extracted) if extracted else None,
+            violations=json.dumps(violations) if violations else None,
+            duplicate_probability=dup_prob,
+            risk_level=risk_level,
+            risk_score=risk_score,
+            decision=decision,
+            explanation=explanation
+        )
+        
+        db.add(exp_analysis)
+        db.commit()
+        db.refresh(exp_analysis)
+
+        return {
+            "expense_id": expense.id,
+        }
+    except Exception as e:
+        print(e)
+
+
+def extract_fields_with_rag(ocr_text, policy_context):
+    
+    return json.dumps({
+        "category": "Food",
+        "total_amount": 1813,
+        "vendor": "Biyani Zone",
+        "date": "06-01-2025",
+        "payment_mode": "online"
+    })
 
