@@ -4,7 +4,7 @@ import shutil
 from database import Base, engine, SessionLocal
 from models import Expense, ExpenseAnalysisResults
 from ocr import run_ocr
-from extraction_agent import extract_fields
+from extraction_agent import (extract_fields,extract_fields_with_rag)
 from rules_engine import validate_rules
 from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
@@ -235,10 +235,20 @@ def metrics_details():
 
 
 
-@app.get("/process_new")
-async def process_expense_new():
+@app.post("/process_new")
+async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(...)):
     try:
-        ocr_text = "Biyani Zone\nTotal: 1813\nDate: 06-01-2025\nPaid via UPI"
+        file_path = f"{file.filename}"
+        file_extension = Path(file.filename).suffix.lstrip(".")
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        form = json.loads(form_data)
+        emp_id = form.get('employeeId')
+        # 1. OCR
+        ocr_text = run_ocr(file_path,file_extension)
+
+        # ocr_text = "Biyani Zone\nTotal: 1813\nDate: 06-01-2025\nPaid via UPI"
         policy_context = retrieve_policy_context(ocr_text)
 
         # 2. Extraction Agent
@@ -254,8 +264,8 @@ async def process_expense_new():
             extracted_category = None
         # convert the extracted_cate
         extracted_date = extracted.get("date")
-        extracted["category"] = fallback_value(extracted_category, 'Food')
-        extracted["date"] = fallback_value(extracted_date, '2022-01-01')
+        extracted["category"] = fallback_value(extracted_category, form.get("category"))
+        extracted["date"] = fallback_value(extracted_date, form.get("expenseDate"))
 
         violations = validate_rules(extracted)
         print(extracted)
@@ -273,7 +283,7 @@ async def process_expense_new():
         decision, explanation = decide(risk_level)
         # Save expense to DB
         expense = Expense(
-            employee_id=1011,
+            employee_id=emp_id,
             vendor=extracted.get("vendor", ''),
             total_amount=extracted.get("total_amount", ''),
             date=extracted.get("date", ''),
@@ -281,7 +291,7 @@ async def process_expense_new():
             category=extracted.get("category", ''),
             subcategory=extracted.get("subcategory", ''),
             payment_mode=extracted.get("payment_mode", ''),
-            receipt_url='jhb'
+            receipt_url=file_path
         )
 
         db.add(expense)
@@ -321,13 +331,13 @@ async def process_expense_new():
         print(e)
 
 
-def extract_fields_with_rag(ocr_text, policy_context):
+# def extract_fields_with_rag(ocr_text, policy_context):
     
-    return json.dumps({
-        "category": "Food",
-        "total_amount": 1813,
-        "vendor": "Biyani Zone",
-        "date": "06-01-2025",
-        "payment_mode": "online"
-    })
+#     return json.dumps({
+#         "category": "Food",
+#         "total_amount": 1813,
+#         "vendor": "Biyani Zone",
+#         "date": "06-01-2025",
+#         "payment_mode": "online"
+#     })
 

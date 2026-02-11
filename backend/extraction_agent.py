@@ -83,7 +83,7 @@ def extract_fields(ocr_text: str):
 
 #     print(response.output_text)
 
-def extract_fields_with_rag(ocr_text: str, policy_context: str) -> str:
+def extract_fields_with_rag(ocr_text: str, policy_context: str):
     prompt = f"""
         You are an expense receipt extraction assistant.
 
@@ -119,11 +119,7 @@ def extract_fields_with_rag(ocr_text: str, policy_context: str) -> str:
 
     response = client.responses.create(
         model="gpt-4.1-mini",
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "You extract receipts into JSON."},
-            {"role": "user", "content": prompt}
-        ]
+        input=prompt
     )
-
-    return response.choices[0].message.content
+    print('response received',response)
+    return response.output_text
