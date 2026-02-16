@@ -1,8 +1,8 @@
 from common import CATEGORIES, fallback_value
-from fastapi import FastAPI, UploadFile, File,Form
+from fastapi import FastAPI, UploadFile, File,Form,Request
 import shutil
 from database import Base, engine, SessionLocal
-from models import Expense, ExpenseAnalysisResults
+from models import Expense, ExpenseAnalysisResults, Taxonomy
 from ocr import run_ocr
 from extraction_agent import (extract_fields,extract_fields_with_rag)
 from rules_engine import validate_rules
@@ -330,6 +330,22 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
     except Exception as e:
         print(e)
 
+@app.post('/api/save_taxonomy')
+async def save_taxonomy(data:Request):
+    data = await data.json()
+    db = SessionLocal()
+    save_taxonomy = Taxonomy(
+        module=data.get('module',''),
+        category=data.get('category',''),
+        sub_category=data.get('sub_category','')
+    )
+    
+    db.add(save_taxonomy)
+    db.commit()
+    db.refresh(save_taxonomy)
+    return {"message": "Taxonomy Saved Successfully"}
+    
+    
 
 # def extract_fields_with_rag(ocr_text, policy_context):
     

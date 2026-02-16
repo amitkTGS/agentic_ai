@@ -56,5 +56,14 @@ class ExpenseAnalysisResults(Base):
 
     decision = Column(Text, nullable=True)    
     explanation = Column(Text, nullable=True)
+    
+class Taxonomy(Base):
+    __tablename__ = "taxonomy_data"
+    
+    id = Column(Integer,primary_key=True,index=True)
+    module = Column(String,nullable=False)
+    category = Column(String,nullable=False)
+    sub_category = Column(String,nullable=False)
+
 
 

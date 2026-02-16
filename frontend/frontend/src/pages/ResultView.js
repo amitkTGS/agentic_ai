@@ -31,7 +31,7 @@ export default function ResultView() {
   }, [id])
 
   const handleBack = () => {
-    navigate("/dashboard"); // change to your listing route
+    navigate("/finance/dashboard"); // change to your listing route
   };
 
   const handleApprove = async (status) => {
