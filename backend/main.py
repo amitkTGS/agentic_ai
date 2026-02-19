@@ -4,7 +4,8 @@ import shutil
 from database import Base, engine, SessionLocal
 from models import Expense, ExpenseAnalysisResults, Taxonomy
 from ocr import run_ocr
-from extraction_agent import (extract_fields,extract_fields_with_rag)
+# from extraction_agent import (extract_fields,extract_fields_with_rag)
+from extraction_agent_new import (extract_fields,extract_fields_with_rag)
 from rules_engine import validate_rules
 from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
