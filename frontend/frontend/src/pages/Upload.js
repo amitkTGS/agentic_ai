@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Container, Navbar, Card, Form, Alert, Row, Col, Button } from "react-bootstrap";
 import auditService from '../services/audit';
 import { useNavigate } from "react-router-dom";
-import { FILE_SETTINGS, EXPENSE_CATEGORIES } from "../services/constants";
-import ResultView from "./ResultView";
+import { FILE_SETTINGS,TAXONOMY_DATA, } from "../services/constants";
+import { useParams } from "react-router-dom";
 
 
 export default function Upload() {
   const navigate = useNavigate();
+  const {module} = useParams();
   const [formData, setFormData] = useState({
     employeeId: '',
     expenseDate: '',
@@ -109,7 +110,7 @@ export default function Upload() {
                 </Col>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Expense Date <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>Date <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="date"
                       onChange={(e) => setFormData({ ...formData, expenseDate: e.target.value })}
@@ -124,16 +125,18 @@ export default function Upload() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
                   <option value="">Select Category</option>
-                  {Object.values(EXPENSE_CATEGORIES).map((cat) => (
-                    <option key={cat.key} value={cat.key}>
-                      {cat.label}
-                    </option>
-                  ))}
+                  {Object.entries(TAXONOMY_DATA[module] || {}).map(
+                    ([key, value]) => (
+                      <option key={key} value={key}>
+                        {value.label}
+                      </option>
+                    )
+                  )}
                 </Form.Select>
               </Form.Group>
               <div className="d-grid">
                 <Button variant="primary" type="submit" size="lg" disabled={loading}>
-                  {loading ? 'Processing...' : 'Process Expense'}
+                  {loading ? 'Processing...' : 'Process'}
                 </Button>
               </div>
             </Form>

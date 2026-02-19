@@ -2,16 +2,19 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Spinner, Table, Card, Form, Row, Col } from "react-bootstrap";
 import auditService from "../services/audit";
-import { AUDIT_STATUS, EXPENSE_CATEGORIES } from "../services/constants";
+import { AUDIT_STATUS, EXPENSE_CATEGORIES,TAXONOMY_DATA,MODULES} from "../services/constants";
+import { useParams } from "react-router-dom";
 
 export default function Dashboard() {
+  const { module } = useParams();
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     status: '',
     category: '',
     start_date: '',
-    end_date: ''
+    end_date: '',
+    module: module
   });
   const navigate = useNavigate();
 
@@ -32,7 +35,7 @@ export default function Dashboard() {
   }, [fetchFilteredData]);
 
   const handleView = (item) => {
-    navigate('/result_view/' + item.id)
+    navigate('/'+module+'/result_view/' + item.id)
   }
   const handleDelete  = async (id)=>{
     try{
@@ -48,7 +51,7 @@ export default function Dashboard() {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Expense Dashboard</h3>
+        <h3>{MODULES?.[module] || 'Expense'} Dashboard</h3>
       </div>
       <Card className="mb-4 shadow-sm border-0 bg-light p-3">
         <Row className="g-3">
@@ -74,11 +77,13 @@ export default function Dashboard() {
               onChange={e => setFilters({ ...filters, category: e.target.value })}
             >
               <option value="">All Categories</option>
-              {Object.values(EXPENSE_CATEGORIES).map((cat) => (
-                <option key={cat.key} value={cat.key}>
-                  {cat.label}
-                </option>
-              ))}
+              {Object.entries(TAXONOMY_DATA[module] || {}).map(
+                ([key, value]) => (
+                  <option key={key} value={key}>
+                    {value.label}
+                  </option>
+                )
+              )}
             </Form.Select>
           </Col>
 
@@ -122,7 +127,9 @@ export default function Dashboard() {
                   <td>{item.vendor}</td>
                   <td>{item.total_amount || '0.00'}</td>
                   <td>{item.date}</td>
-                  <td>{EXPENSE_CATEGORIES?.[item.category]?.['label']}</td>
+                  <td>
+                    {TAXONOMY_DATA[module]?.[item.category]?.['label'] || item.category}
+                  </td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       <span

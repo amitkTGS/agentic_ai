@@ -1,8 +1,7 @@
 import React from "react";
 import { BrowserRouter, Link, Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { Navbar, Container, Nav } from "react-bootstrap";
-import Dashboard from "./pages/Dashboard";
-import Upload from "./pages/Upload";
+import { MODULES } from "./services/constants";
 import GlobalLoader from "./components/GlobalLoader";
 import { useLoader } from "./context/LoaderContext";
 import { useEffect } from "react";
@@ -15,22 +14,23 @@ import {useLocation} from "react-router-dom";
 function AppContent() {
   const location = useLocation();
   const module = location.pathname.split("/")[1];
-  const isFinance = module === "finance";
+  const module_name = MODULES?.[module]|| "";
+  const isAllowModule = (module === "finance" || module === 'health');
   
   return (
     <>
       <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
         <Container>
-          <Navbar.Brand as={Link} to={'/'}>Intelligent {isFinance && 'Expense'} Audit</Navbar.Brand>
+          <Navbar.Brand as={Link} to={'/'}>Intelligent {isAllowModule?module_name : ''} Audit</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto">
               <Nav.Link as={Link} to={'/'}>Home</Nav.Link>
-              {isFinance && (
+              {isAllowModule && (
                 <>
-                  <Nav.Link as={Link} to={'/finance/dashboard'}>Dashboard</Nav.Link>
-                  <Nav.Link as={Link} to={'/finance/add_audit'}>New Audit</Nav.Link>
-                  <Nav.Link as={Link} to={'/finance/score_card'}>Metrics</Nav.Link>
+                  <Nav.Link as={Link} to={`/${module}/dashboard`}>Dashboard</Nav.Link>
+                  <Nav.Link as={Link} to={`/${module}/add_audit`}>New Audit</Nav.Link>
+                  <Nav.Link as={Link} to={`/${module}/score_card`}>Metrics</Nav.Link>
                 </>
               )}
             </Nav>

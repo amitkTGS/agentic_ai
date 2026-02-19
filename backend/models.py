@@ -15,6 +15,7 @@ class Expense(Base):
     payment_mode = Column(String)
     receipt_url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+    module = Column(String)
 
 class Violation(Base):
     __tablename__ = "violations"

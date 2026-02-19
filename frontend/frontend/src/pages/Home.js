@@ -13,6 +13,16 @@ const projects = [
       "https://cdn-icons-png.flaticon.com/512/3135/3135706.png"
   },
   {
+    name: "Health Care",
+    status: "Live",
+    badge: "success",
+    description:
+      "Automate auditing of medical bills and provider invoices for compliance.",
+    route: "/health/dashboard",
+    image:
+      "https://cdn-icons-png.flaticon.com/512/2966/2966486.png"
+  },
+  {
     name: "BFSI (Banking & Financial Services)",
     status: "Planned",
     badge: "primary",
@@ -32,16 +42,7 @@ const projects = [
     image:
       "https://cdn-icons-png.flaticon.com/512/942/942748.png"
   },
-  {
-    name: "Health Care",
-    status: "Planned",
-    badge: "primary",
-    description:
-      "Automate auditing of medical bills and provider invoices for compliance.",
-    route: "/health/define_taxonomy",
-    image:
-      "https://cdn-icons-png.flaticon.com/512/2966/2966486.png"
-  },
+  
   {
     name: "Manufacturing / Supply Chain",
     status: "Planned",

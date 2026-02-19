@@ -100,3 +100,6 @@ def extract_fields_with_rag(ocr_text: str, policy_context: str):
     print("response received:")
     print(response.content[0].text)
     return response.content[0].text
+
+def extract_fields_with_rag_health_care(ocr_text: str, policy_context: str):
+    return 'Testing'
