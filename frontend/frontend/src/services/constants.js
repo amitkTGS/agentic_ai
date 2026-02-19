@@ -25,6 +25,26 @@ export const MODULES = {
     supply_chain: "Manufacturing / Supply Chain"
 }
 export const TAXONOMY_DATA = {
+    expense:{
+        food:{
+            label:"Food",
+        },
+        travel:{
+            label:"Travel",
+        },
+        office_supplies:{
+            label:"Office Supplies",
+        },
+        accommodation:{
+            label:"Accommodation",
+        },
+        miscellaneous:{
+            label:"Miscellaneous",
+        },
+        other:{
+            label:"Others",
+        },
+    },
     bfsi: {
         transaction_type: {
             label: "Transaction Type",

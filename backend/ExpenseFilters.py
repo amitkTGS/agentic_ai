@@ -5,4 +5,5 @@ class ExpenseFilters(BaseModel):
     category: Optional[str] = None
     start_date: Optional[str] = None
     end_date: Optional[str] = None
+    module: Optional[str] = None
     

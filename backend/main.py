@@ -5,7 +5,7 @@ from database import Base, engine, SessionLocal
 from models import Expense, ExpenseAnalysisResults, Taxonomy
 from ocr import run_ocr
 # from extraction_agent import (extract_fields,extract_fields_with_rag)
-from extraction_agent_new import (extract_fields,extract_fields_with_rag)
+from extraction_agent_new import (extract_fields,extract_fields_with_rag,extract_fields_with_rag_health_care)
 from rules_engine import validate_rules
 from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
@@ -19,7 +19,10 @@ from fastapi import Query
 from rag import (
     retrieve_policy_context,
     store_expense_embedding,
-    semantic_duplicate_score
+    semantic_duplicate_score,
+    retrieve_health_policy_context,
+    store_healthcare_claim_embedding,
+    semantic_duplicate_score_healthcare
 )
 
 Base.metadata.create_all(bind=engine)
@@ -87,7 +90,8 @@ async def process_expense(file: UploadFile = File(...),form_data:str=Form(...)):
             category=extracted.get("category", ''),
             subcategory=extracted.get("subcategory", ''),
             payment_mode=extracted.get("payment_mode", ''),
-            receipt_url=file_path
+            receipt_url=file_path,
+            module="expense"
         )
 
         db.add(expense)
@@ -129,7 +133,9 @@ async def list_expenses(filters: ExpenseFilters = ExpenseFilters()):
 
     if filters.end_date and filters.end_date != '':
         query = query.filter(Expense.date <= filters.end_date)
-
+    if filters.module and filters.module !='':
+        query = query.filter(Expense.module == filters.module)
+        
     return query.all()
 
 @app.get('/expense/{id}')
@@ -191,23 +197,6 @@ from datastore import (
     RISK_BAND_DATA,
     TAXONOMY_DATA,
 )
-
-
-# @app.get("/api/metrics/summary", response_model=MetricsResponse)
-# def metrics_summary(mode: str = Query("demo", enum=["demo", "live"])):
-#     # Later: switch to DB if mode == live
-#     metrics = Metrics(
-#         ocr=ocr_accuracy(OCR_DATA),
-#         extraction=extraction_accuracy(EXTRACTION_DATA),
-#         policy=policy_accuracy(POLICY_DATA),
-#         duplicate=duplicate_score(DUPLICATE_DATA),
-#         decision=decision_accuracy(HITL_DATA),
-#     )
-
-#     return MetricsResponse(
-#         metrics=metrics,
-#         cas=calculate_cas(metrics.dict())
-#     )
 
 
 @app.get("/api/metrics/details")
@@ -292,7 +281,8 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
             category=extracted.get("category", ''),
             subcategory=extracted.get("subcategory", ''),
             payment_mode=extracted.get("payment_mode", ''),
-            receipt_url=file_path
+            receipt_url=file_path,
+            module = form.get("module","expense")
         )
 
         db.add(expense)
@@ -318,7 +308,7 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
             risk_level=risk_level,
             risk_score=risk_score,
             decision=decision,
-            explanation=explanation
+            explanation=explanation,
         )
         
         db.add(exp_analysis)
@@ -345,16 +335,101 @@ async def save_taxonomy(data:Request):
     db.commit()
     db.refresh(save_taxonomy)
     return {"message": "Taxonomy Saved Successfully"}
-    
-    
 
-# def extract_fields_with_rag(ocr_text, policy_context):
-    
-#     return json.dumps({
-#         "category": "Food",
-#         "total_amount": 1813,
-#         "vendor": "Biyani Zone",
-#         "date": "06-01-2025",
-#         "payment_mode": "online"
-#     })
+
+@app.post("/process_new_healthcare")
+async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(...)):
+    try:
+        file_path = f"{file.filename}"
+        file_extension = Path(file.filename).suffix.lstrip(".")
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        form = json.loads(form_data)
+        emp_id = form.get('employeeId')
+        # 1. OCR
+        ocr_text = run_ocr(file_path,file_extension)
+
+        # ocr_text = "Biyani Zone\nTotal: 1813\nDate: 06-01-2025\nPaid via UPI"
+        policy_context = retrieve_health_policy_context(ocr_text)
+
+        # 2. Extraction Agent
+        extracted = json.loads(extract_fields_with_rag_health_care(ocr_text,policy_context))
+        # extracted = json.loads(extract_fields(ocr_text))
+        # extracted = json.loads('{"category":"Food","total_amount":813,"vendor":"biyani zone","date":"2025-01-06"}')
+        # 3. Rules
+        extracted_category = extracted.get("category")
+        if extracted_category:
+            category_key = str(extracted_category).strip().lower()
+            extracted_category = CATEGORIES.get(category_key)
+        else:
+            extracted_category = None
+        # convert the extracted_cate
+        extracted_date = extracted.get("date")
+        extracted["category"] = fallback_value(extracted_category, form.get("category"))
+        extracted["date"] = fallback_value(extracted_date, form.get("expenseDate"))
+
+        violations = validate_rules(extracted)
+        print(extracted)
+        # 4. Duplicate Check
+        db = SessionLocal()
+        previous = db.query(Expense).all()
+        fuzzy_dup = duplicate_probability(extracted, previous)
+        semantic_dup = semantic_duplicate_score_healthcare(ocr_text)
+        
+        dup_prob = max(fuzzy_dup, semantic_dup)
+        # 5. Risk
+        risk_level, risk_score = compute_risk(violations, dup_prob)
+
+        # 6. Decision
+        decision, explanation = decide(risk_level)
+        # Save expense to DB
+        expense = Expense(
+            employee_id=emp_id,
+            vendor=extracted.get("vendor", ''),
+            total_amount=extracted.get("total_amount", ''),
+            date=extracted.get("date", ''),
+            status=decision,
+            category=extracted.get("category", ''),
+            subcategory=extracted.get("subcategory", ''),
+            payment_mode=extracted.get("payment_mode", ''),
+            receipt_url=file_path,
+            module ="healthcare"
+        )
+
+        db.add(expense)
+        db.commit()          
+        db.refresh(expense)  
+        
+        store_healthcare_claim_embedding(
+            expense.id,
+            ocr_text,
+            {
+                "vendor": expense.vendor,
+                "amount": expense.total_amount,
+                "category": expense.category
+            }
+        )
+        
+        exp_analysis = ExpenseAnalysisResults(
+            expense_id=expense.id,
+            ocr_text=ocr_text,
+            extracted=json.dumps(extracted) if extracted else None,
+            violations=json.dumps(violations) if violations else None,
+            duplicate_probability=dup_prob,
+            risk_level=risk_level,
+            risk_score=risk_score,
+            decision=decision,
+            explanation=explanation,
+        )
+        
+        db.add(exp_analysis)
+        db.commit()
+        db.refresh(exp_analysis)
+
+        return {
+            "expense_id": expense.id,
+        }
+    except Exception as e:
+        print(e)
 
