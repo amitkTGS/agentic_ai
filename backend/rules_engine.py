@@ -26,3 +26,22 @@ def validate_rules(expense):
         })
 
     return violations
+def validate_healthcare_rules(claim):
+    violations = []
+
+    # Hospital claim limit
+    if claim["total_amount"] > 500000:
+        violations.append({
+            "rule_id": "HOSPITAL_CLAIM_LIMIT",
+            "severity": "High",
+            "description": "Hospital claim exceeds ₹5,00,000 limit."
+        })
+
+    # Missing diagnosis check
+    if not claim.get("vendor"):
+        violations.append({
+            "rule_id": "MISSING_DIAGNOSIS",
+            "severity": "High",
+            "description": "Hospital Name missing from hospital bill."
+        })
+    return violations

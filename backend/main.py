@@ -6,7 +6,7 @@ from models import Expense, ExpenseAnalysisResults, Taxonomy
 from ocr import run_ocr
 # from extraction_agent import (extract_fields,extract_fields_with_rag)
 from extraction_agent_new import (extract_fields,extract_fields_with_rag,extract_fields_with_rag_health_care)
-from rules_engine import validate_rules
+from rules_engine import (validate_rules,validate_healthcare_rules)
 from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
 from decision_agent import decide
@@ -133,6 +133,7 @@ async def list_expenses(filters: ExpenseFilters = ExpenseFilters()):
 
     if filters.end_date and filters.end_date != '':
         query = query.filter(Expense.date <= filters.end_date)
+        
     if filters.module and filters.module !='':
         query = query.filter(Expense.module == filters.module)
         
@@ -337,7 +338,7 @@ async def save_taxonomy(data:Request):
     return {"message": "Taxonomy Saved Successfully"}
 
 
-@app.post("/process_new_healthcare")
+@app.post("/process_healthcare")
 async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(...)):
     try:
         file_path = f"{file.filename}"
@@ -356,7 +357,7 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
         # 2. Extraction Agent
         extracted = json.loads(extract_fields_with_rag_health_care(ocr_text,policy_context))
         # extracted = json.loads(extract_fields(ocr_text))
-        # extracted = json.loads('{"category":"Food","total_amount":813,"vendor":"biyani zone","date":"2025-01-06"}')
+        # extracted = json.loads('{"category":"compilance_code","total_amount":813,"vendor":"City Care Hospital","date":"2025-01-15","patient_name":"Ramesh Kumar"}')
         # 3. Rules
         extracted_category = extracted.get("category")
         if extracted_category:
@@ -369,8 +370,7 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
         extracted["category"] = fallback_value(extracted_category, form.get("category"))
         extracted["date"] = fallback_value(extracted_date, form.get("expenseDate"))
 
-        violations = validate_rules(extracted)
-        print(extracted)
+        violations = validate_healthcare_rules(extracted)
         # 4. Duplicate Check
         db = SessionLocal()
         previous = db.query(Expense).all()
@@ -394,7 +394,7 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
             subcategory=extracted.get("subcategory", ''),
             payment_mode=extracted.get("payment_mode", ''),
             receipt_url=file_path,
-            module ="healthcare"
+            module ="health"
         )
 
         db.add(expense)

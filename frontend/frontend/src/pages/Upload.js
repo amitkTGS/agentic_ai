@@ -32,10 +32,18 @@ export default function Upload() {
     console.log(loading)
     setError(null);
     try {
-      const response = await auditService.submitAudit(formres);
+      var response  ='';
+      if(module === "finance"){
+        formres.append('module', module);
+        response = await auditService.submitAudit(formres);
+
+      }else if(module === "health"){
+        formres.append('module', module);
+        response = await auditService.submitHealthcareAudit(formres);
+      }
       if(response?.data){
         setLoading(false);
-        navigate('/result_view/'+response?.data.expense_id)
+        navigate(`/${module}/result_view/${response?.data.expense_id}`)
       }
     } catch (err) {
       setError('System Error');

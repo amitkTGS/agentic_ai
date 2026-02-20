@@ -25,7 +25,7 @@ export const MODULES = {
     supply_chain: "Manufacturing / Supply Chain"
 }
 export const TAXONOMY_DATA = {
-    expense:{
+    finance:{
         food:{
             label:"Food",
         },
@@ -138,3 +138,20 @@ export const TAXONOMY_DATA = {
         }
     }
 };
+
+export const HEADER_COLUMNS = {
+    finance: [
+        { key: 'vendor', label: 'Vendor' },
+        { key: 'total_amount', label: 'Amount' },
+        { key: 'date', label: 'Date' },
+        { key: 'category', label: 'Category' },
+        { key: 'status', label: 'Status' },
+    ],
+    health:[
+        { key: 'vendor', label: 'Hospital Name' },
+        { key: 'total_amount', label: 'Total Amount' },
+        { key: 'date', label: 'Date' },
+        { key: 'category', label: 'Category' },
+        { key: 'status', label: 'Status' },
+    ]
+}

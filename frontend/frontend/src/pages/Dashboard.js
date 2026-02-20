@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Spinner, Table, Card, Form, Row, Col } from "react-bootstrap";
 import auditService from "../services/audit";
-import { AUDIT_STATUS, EXPENSE_CATEGORIES,TAXONOMY_DATA,MODULES} from "../services/constants";
+import { AUDIT_STATUS, EXPENSE_CATEGORIES,TAXONOMY_DATA,MODULES, HEADER_COLUMNS} from "../services/constants";
 import { useParams } from "react-router-dom";
 
 export default function Dashboard() {
@@ -111,11 +111,9 @@ export default function Dashboard() {
             <tr>
               <th>S.No</th>
               <th>ID</th>
-              <th>Vendor</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Status</th>
+              {HEADER_COLUMNS?.[module]?.map(col => (
+                <th key={col.key}>{col.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
