@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { Container, Card, Row, Col, Button, Badge, ListGroup, ProgressBar } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import auditService from '../services/audit';
-import { AUDIT_STATUS, EXPENSE_CATEGORIES } from '../services/constants';
+import { AUDIT_STATUS, TAXONOMY_DATA, MODULES } from '../services/constants';
 export default function ResultView() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { module, id } = useParams();
   const [data, setData] = useState();
 
 
@@ -31,13 +31,13 @@ export default function ResultView() {
   }, [id])
 
   const handleBack = () => {
-    navigate("/finance/dashboard"); // change to your listing route
+    navigate(`/${module}/dashboard`); // change to your listing route
   };
 
   const handleApprove = async (status) => {
     try {
       await auditService.approveExpense(data.expense_id, status);
-      navigate("/dashboard");
+      navigate(`/${module}/dashboard`);
     } catch (err) {
       console.error(err);
     }
@@ -134,26 +134,52 @@ export default function ResultView() {
             <Card.Header className="fw-bold">Extracted Details</Card.Header>
             <Card.Body>
               <Row>
-                <Col md={6} className="mb-3">
-                  <label className="text-muted small text-uppercase fw-bold d-block">Category</label>
-                  <span className="fs-5">{EXPENSE_CATEGORIES[data?.extracted?.category]?.label || 'N/A'}</span>
-                </Col>
-                <Col md={6} className="mb-3">
-                  <label className="text-muted small text-uppercase fw-bold d-block">Total Amount</label>
-                  <span className="fs-5">{data?.extracted?.total_amount || 'N/A'}</span>
-                </Col>
-                <Col md={6} className="mb-3">
-                  <label className="text-muted small text-uppercase fw-bold d-block">Vendor</label>
-                  <span className="fs-5">{data?.extracted?.vendor || 'N/A'}</span>
-                </Col>
-                <Col md={6} className="mb-3">
-                  <label className="text-muted small text-uppercase fw-bold d-block">Expense Date</label>
-                  <span className="fs-5">{data?.extracted?.date || 'N/A'}</span>
-                </Col>
-                <Col md={6}>
-                  <label className="text-muted small text-uppercase fw-bold d-block">Duplicate Probability</label>
-                  <span className="fs-5">{(data?.duplicate_probability * 100).toFixed(1)}%</span>
-                </Col>
+                {module ==="finance" && <>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Category</label>
+                    <span className="fs-5">{TAXONOMY_DATA?.[module]?.[data?.extracted?.category]?.label || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Total Amount</label>
+                    <span className="fs-5">{data?.extracted?.total_amount || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Vendor</label>
+                    <span className="fs-5">{data?.extracted?.vendor || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Expense Date</label>
+                    <span className="fs-5">{data?.extracted?.date || 'N/A'}</span>
+                  </Col>
+                  <Col md={6}>
+                    <label className="text-muted small text-uppercase fw-bold d-block">Duplicate Probability</label>
+                    <span className="fs-5">{(data?.duplicate_probability * 100).toFixed(1)}%</span>
+                  </Col>
+                </>
+                }
+                {module === "health" && <>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Category</label>
+                    <span className="fs-5">{TAXONOMY_DATA?.[module]?.[data?.extracted?.category]?.label || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Total Amount</label>
+                    <span className="fs-5">{data?.extracted?.total_amount || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Hospital Name</label>
+                    <span className="fs-5">{data?.extracted?.vendor || 'N/A'}</span>
+                  </Col>
+                  <Col md={6} className="mb-3">
+                    <label className="text-muted small text-uppercase fw-bold d-block">Date</label>
+                    <span className="fs-5">{data?.extracted?.date || 'N/A'}</span>
+                  </Col>
+                  <Col md={6}>
+                    <label className="text-muted small text-uppercase fw-bold d-block">Duplicate Probability</label>
+                    <span className="fs-5">{(data?.duplicate_probability * 100).toFixed(1)}%</span>
+                  </Col>
+                </>
+  }
               </Row>
               <hr />
               <h6>Explanation</h6>

@@ -64,7 +64,7 @@ function CommonContent() {
         </Route>
 
         <Route element={<AppContent />}>
-          <Route path="/result_view/:id" element={<ResultView />} />
+          <Route path="/:module/result_view/:id" element={<ModuleGuard page="result_view" />} />
           <Route path="/:module/dashboard" element={<ModuleGuard page="dashboard" />} />
           <Route path="/:module/add_audit" element={<ModuleGuard page="add_audit" />} />
           <Route path="/:module/score_card" element={<ModuleGuard page="score_card" />} />

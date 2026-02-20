@@ -50,8 +50,8 @@ HEALTHCARE_POLICIES = [
 ]
 
 
-# for policy in POLICIES:
-#     store_policy(policy["text"], policy["id"])
+for policy in POLICIES:
+    store_policy(policy["text"], policy["id"])
 for policy in HEALTHCARE_POLICIES:
     store_healthcare_policy(policy["text"], policy["id"])
 

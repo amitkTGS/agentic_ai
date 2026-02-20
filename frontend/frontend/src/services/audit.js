@@ -7,6 +7,9 @@ const auditService = {
     submitAudit(payload){
         return auditApi.post('/process_new',payload);
     },
+    submitHealthcareAudit(payload){
+        return auditApi.post('/process_healthcare',payload);
+    },
     getExpenseData(id){
         return auditApi.get('/expense/'+id);
     },
