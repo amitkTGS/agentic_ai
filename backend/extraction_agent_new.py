@@ -11,43 +11,6 @@ You are an extraction agent. Read receipts and return structured fields:
 (date, vendor, amount, category, currency) in JSON. 
 If uncertain, set fields as null. No hallucination.
 """
-
-def extract_fields(ocr_text: str):
-
-    prompt = f"""
-            Extract structured data from the OCR text below.
-
-            Return JSON ONLY in this format and strictly don't add \\n:
-            {{
-            "category": "Food | Travel | Accommodation | Office Supplies | Miscellaneous | Other | null",
-            "total_amount": number | null,
-            "vendor": "string | null",
-            "date": "DD-MM-YYYY | null",
-            "payment_mode":"online | offline | null"
-            }}
-
-            Constraint: The "date" must be converted to DD-MM-YYYY format (e.g., 01-12-2022).
-
-            OCR TEXT:
-            <<<
-            {ocr_text}
-            >>>
-            """
-
-    response = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=500,
-        temperature=0,
-        system=SYSTEM_PROMPT,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-
-    print("response received:")
-    return response.content[0].text
-
-
 def extract_fields_with_rag(ocr_text: str, policy_context: str):
 
     prompt = f"""
@@ -102,7 +65,6 @@ def extract_fields_with_rag(ocr_text: str, policy_context: str):
     return response.content[0].text
 
 def extract_fields_with_rag_health_care(ocr_text: str, policy_context: str):
-    
     prompt = f"""
         You are a healthcare OPD bill extraction assistant.
 
@@ -114,7 +76,7 @@ def extract_fields_with_rag_health_care(ocr_text: str, policy_context: str):
 
         Schema:
         {{
-        "hospital_name": "string | null",
+        "vendor": "string | null",
         "doctor_name": "string | null",
         "department": "string | null",
         "visit_type": "OPD | IPD | Diagnostic | Pharmacy | null",
@@ -122,12 +84,16 @@ def extract_fields_with_rag_health_care(ocr_text: str, policy_context: str):
         "tests_charges": number | null,
         "total_amount": number | null,
         "date": "DD-MM-YYYY | null",
-        "category": "Clinical Services → OPD | Clinical Services → IPD | Diagnostics | Pharmacy | null"
+        "patient_name":"string | null",
+        "category": "treatment_category | provider_type | compilance_code | null"
         }}
 
         Rules:
+        - vendor should capture the entity issuing the bill (hospital, clinic, lab, pharmacy, diagnostic center, etc.)
+        - If bill content relates to treatment (consultation, surgery, medication) → category = treatment_category
+        - If bill content relates to hospital/clinic/lab identity → category = provider_type
+        - If bill references ICD or CPT codes → category = compilance_code
         - Detect if bill is OPD consultation (doctor visit without admission)
-        - If only consultation present → category = Clinical Services → OPD
         - Extract doctor's name (Dr., MD, MBBS, Specialist etc.)
         - Extract consultation fee separately from lab tests
         - If lab tests exist, populate tests_charges

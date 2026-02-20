@@ -23,6 +23,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import auditService from "../services/audit";
+import { MODULES } from "../services/constants";
+import { useParams } from "react-router-dom";
 
 const calculateCAS = (m) =>
   (
@@ -38,6 +40,7 @@ const COLORS = ["#0d6efd", "#00BF00", "#dc3545"];
    COMPONENT
 ========================= */
 export default function ScoreCard() {
+  const {module} = useParams();
   const [metrics,setMetrics] = useState()
   const [cas,setCas] = useState(0)
   useEffect(()=>{
@@ -52,7 +55,11 @@ export default function ScoreCard() {
   },[])
 
   return (
+      
     <Container fluid className="p-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3>{MODULES?.[module] || 'Expense'} Metrics</h3>
+      </div>
       {/* 1️⃣ CAS */}
       <Card className="shadow-sm mb-4">
         <Card.Body>
