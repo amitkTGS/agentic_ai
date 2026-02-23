@@ -49,7 +49,7 @@ export default function ResultView() {
         <Button variant="outline-secondary" onClick={handleBack}>
           <i className="bi bi-arrow-left me-2"></i> Back
         </Button>
-        <h2 className="mb-0">Audit Results</h2>
+        <h2 className="mb-0"> {MODULES[module]?.label} Audit Results</h2>
       </div>
 
       <Row className='mt-2'>

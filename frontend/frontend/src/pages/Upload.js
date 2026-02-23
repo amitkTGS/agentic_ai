@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Container, Navbar, Card, Form, Alert, Row, Col, Button } from "react-bootstrap";
 import auditService from '../services/audit';
 import { useNavigate } from "react-router-dom";
-import { FILE_SETTINGS,TAXONOMY_DATA, } from "../services/constants";
+import { FILE_SETTINGS,TAXONOMY_DATA,MODULES } from "../services/constants";
 import { useParams } from "react-router-dom";
 
 
@@ -82,6 +82,10 @@ export default function Upload() {
       <Container className="d-flex justify-content-center">
         <Card style={{ width: '100%', maxWidth: '600px' }} className="shadow-sm">
           <Card.Body>
+            
+            <div className="">
+              <h3 className="text-center">{MODULES?.[module] || 'Expense'}</h3>
+            </div>
             <Form onSubmit={handleProcess}>
               <Form.Group className="mb-4">
                 <Form.Label className="">Upload Receipt <span className="text-danger">*</span></Form.Label>

@@ -11,4 +11,10 @@ CATEGORIES = {
     "miscellaneous": "miscellaneous",
     "other": "other"
 }
+HEALTH_CARE_CATEGORIES = {
+    "compliance_code": "compliance_code",
+    "medication": "medication",
+    "treatment": "treatment",
+    
+}
 
