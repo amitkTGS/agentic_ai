@@ -42,6 +42,10 @@ app.add_middleware(
 async def list_expenses(filters: ExpenseFilters = ExpenseFilters()):
     db = SessionLocal()
     query = db.query(Expense)
+    
+    if filters.status and filters.status != '':
+        query = query.filter(Expense.status == filters.status)
+        
     if filters.category and filters.category != '':
         query = query.filter(Expense.category == filters.category)
 

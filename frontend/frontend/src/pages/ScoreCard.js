@@ -265,7 +265,7 @@ export default function ScoreCard() {
                       <td>{r.dup}</td>
                       <td>{r.risk}%</td>
                       <td>
-                        <Badge bg="success">{r.decision}</Badge>
+                        <Badge bg={r.color}>{r.decision}</Badge>
                       </td>
                     </tr>
                   ))}
@@ -510,7 +510,7 @@ export default function ScoreCard() {
                       <td>{r.dup}</td>
                       <td>{r.risk}%</td>
                       <td>
-                        <Badge bg="success">{r.decision}</Badge>
+                        <Badge bg={r.color}>{r.decision}</Badge>
                       </td>
                     </tr>
                   ))}

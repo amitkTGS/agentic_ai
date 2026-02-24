@@ -6,4 +6,5 @@ class ExpenseFilters(BaseModel):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     module: Optional[str] = None
+    status: Optional[str] = None
     
