@@ -4,6 +4,12 @@ def fallback_value(extracted_value,form_value):
     return extracted_value
 
 CATEGORIES = {
+    "it_services":"it_services",
+    "employee_incentive_program":"employee_incentive_program",
+    "house_keeping_materials":"house_keeping_materials",
+    "internet_lease_lines":"internet_lease_lines",
+    "learning_development":"learning_development",
+    "gifts":"gifts",
     "food": "food",
     "travel": "travel",
     "accommodation": "accommodation",

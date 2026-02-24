@@ -2,15 +2,15 @@ def validate_rules(expense):
     violations = []
 
     # Meal cap example
-    if expense["category"] == "Food" and expense["total_amount"] > 1500:
+    if expense["category"] == "food" and expense["total_amount"] > 10000:
         violations.append({
             "rule_id": "MEAL_CAP",
-            "severity": "Medium",
-            "description": "Meal expense exceeds daily limit of ₹1500."
+            "severity": "HIGH",
+            "description": "Meal expense exceeds daily limit of ₹10000."
         })
 
     # Travel cap
-    if expense["category"] == "Travel" and expense["total_amount"] > 5000:
+    if expense["category"] == "travel" and expense["total_amount"] > 5000:
         violations.append({
             "rule_id": "TRAVEL_CAP",
             "severity": "Medium",

@@ -11,7 +11,7 @@ client = chromadb.Client(
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 expense_policy_collection = client.get_or_create_collection("expense_policies")
-expense_collection = client.get_or_create_collection("historical_expenses")
+expense_collection = client.get_or_create_collection("historical_expenses_new")
 healthcare_policy_collection = client.get_or_create_collection("healthcare_policies")
 healthcare_collection = client.get_or_create_collection("historical_healthcare_claims")
 
@@ -89,3 +89,7 @@ def semantic_duplicate_score_healthcare(ocr_text: str):
         return 0.0
 
     return max(distances[0])
+
+def delete_expense_embedding(expense_id: int):
+    expense_collection.delete(ids=[str(expense_id)])
+    

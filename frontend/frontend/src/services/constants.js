@@ -26,6 +26,24 @@ export const MODULES = {
 }
 export const TAXONOMY_DATA = {
     finance:{
+        it_services:{
+            label:"IT Services",
+        },
+        employee_incentive_program:{
+            label:"Employee Incentive Program",
+        },
+        house_keeping_materials:{
+            label:"House Keeping Materials",
+        },
+        internet_lease_lines:{
+            label:"Internet Lease Lines",
+        },
+        learning_development:{
+            label:"Learning & Development",
+        },
+        gifts:{
+            label:"Gifts",
+        },
         food:{
             label:"Food",
         },
