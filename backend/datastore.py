@@ -51,31 +51,34 @@ CONFIDENCE_DATA = [
 ]
 FILE_SCORE_CARD_DATA = [
     {
-        "file": "Taxi Normal",
+        "file": "House Keeping Materials",
         "ocr": 98,
         "extraction": 95,
         "rules": 100,
         "dup": "N/A",
         "risk": 90,
         "decision": "✔",
+        "color":"success"
     },
     {
-        "file": "Taxi Duplicate",
+        "file": "House Keeping Materials - Duplicate",
         "ocr": 96,
         "extraction": 94,
         "rules": 100,
         "dup": "✔",
         "risk": 88,
         "decision": "✔",
+        "color":"warning"
     },
     {
-        "file": "Foreign Currency",
+        "file": "Food",
         "ocr": 92,
         "extraction": 90,
         "rules": 95,
         "dup": "N/A",
         "risk": 85,
         "decision": "✔",
+        "color":"success"
     },
     {
         "file": "Blurry Receipt",
@@ -85,5 +88,6 @@ FILE_SCORE_CARD_DATA = [
         "dup": "N/A",
         "risk": 75,
         "decision": "✔",
+        "color":"warning"
     },
 ]
