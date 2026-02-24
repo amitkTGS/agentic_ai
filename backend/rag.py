@@ -70,13 +70,16 @@ def semantic_duplicate_score(ocr_text: str):
         query_embeddings=embed_text(ocr_text),
         n_results=5
     )
-    
+
     distances = results.get("distances", [])
 
     if not distances or not distances[0]:
         return 0.0
 
-    return max(distances[0])
+    best_distance = min(distances[0])
+    similarity_score = 1 - best_distance
+
+    return max(0.0, min(similarity_score, 1.0))
 def semantic_duplicate_score_healthcare(ocr_text: str):
     results = healthcare_collection.query(
         query_embeddings=embed_text(ocr_text),
@@ -88,7 +91,7 @@ def semantic_duplicate_score_healthcare(ocr_text: str):
     if not distances or not distances[0]:
         return 0.0
 
-    return max(distances[0])
+    return min(distances[0])
 
 def delete_expense_embedding(expense_id: int):
     expense_collection.delete(ids=[str(expense_id)])

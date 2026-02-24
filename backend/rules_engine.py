@@ -5,7 +5,7 @@ def validate_rules(expense):
     if expense["category"] == "food" and expense["total_amount"] > 10000:
         violations.append({
             "rule_id": "MEAL_CAP",
-            "severity": "HIGH",
+            "severity": "High",
             "description": "Meal expense exceeds daily limit of ₹10000."
         })
 

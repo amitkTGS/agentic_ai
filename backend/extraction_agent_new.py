@@ -25,7 +25,7 @@ def extract_fields_with_rag(ocr_text: str, policy_context: str):
             Schema:
             {{
             "category": "IT Services | Employee Incentive Program | House Keeping Materials | Internet Lease Lines | Learning Development | Gifts | Food | Travel | Accommodation | Office Supplies | Miscellaneous | Other | null",
-            "total_amount": number | null,
+            "total_amount": number | 0,
             "vendor": "string | null",
             "date": "DD-MM-YYYY | null",
             "payment_mode": "online | offline | null"
