@@ -143,12 +143,12 @@ export default function Dashboard() {
                         onClick={() => handleView(item)}
                       ></i>
 
-                      {/* <i
+                      <i
                         className="bi bi-trash text-danger"
                         title="Delete"
                         style={{ cursor: "pointer" }}
                         onClick={() => handleDelete(item.id)}
-                      ></i> */}
+                      ></i>
                     </div>
                   </td>
                 </tr>

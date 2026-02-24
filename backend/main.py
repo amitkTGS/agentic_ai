@@ -17,6 +17,7 @@ from pathlib import Path
 from schemas import Metrics, MetricsResponse
 from fastapi import Query
 from rag import (
+    delete_expense_embedding,
     retrieve_policy_context,
     store_expense_embedding,
     semantic_duplicate_score,
@@ -82,6 +83,10 @@ async def delete_record(expense_id:int):
     expense_analaysis = db.query(ExpenseAnalysisResults).filter(ExpenseAnalysisResults.expense_id == expense_id).first()
     db.delete(expense_analaysis)
     db.commit()
+    try:
+        delete_expense_embedding(expense_id)
+    except Exception as e:
+        print("Chroma delete error:", e)
     return {"message": "Expense deleted successfully"}
 
 @app.delete('/expense_analysis/{id}')
@@ -195,7 +200,7 @@ async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(..
             subcategory=extracted.get("subcategory", ''),
             payment_mode=extracted.get("payment_mode", ''),
             receipt_url=file_path,
-            module = form.get("module","expense")
+            module = "finance"
         )
 
         db.add(expense)
@@ -251,7 +256,7 @@ async def save_taxonomy(data:Request):
 
 
 @app.post("/process_healthcare")
-async def process_expense_new(file: UploadFile = File(...),form_data:str=Form(...)):
+async def process_expense_new_health(file: UploadFile = File(...),form_data:str=Form(...)):
     try:
         file_path = f"{file.filename}"
         file_extension = Path(file.filename).suffix.lstrip(".")

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const projects = [
   {
-    name: "Finance Audit for Enterprise",
+    name: "Finance Audit for Vendors",
     status: "Live",
     badge: "success",
     description:
@@ -14,11 +14,11 @@ const projects = [
   },
   {
     name: "Health Care",
-    status: "Live",
-    badge: "success",
+    status: "Planned",
+    badge: "primary",
     description:
       "Automate auditing of medical bills and provider invoices for compliance.",
-    route: "/health/dashboard",
+    route: "/health/define_taxonomy",
     image:
       "https://cdn-icons-png.flaticon.com/512/2966/2966486.png"
   },

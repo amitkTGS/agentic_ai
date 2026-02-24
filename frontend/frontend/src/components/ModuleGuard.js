@@ -10,7 +10,7 @@ const ModuleGuard = ({ page }) => {
 
     const { module } = useParams();
 
-    if (module === "finance" || module === "health") {
+    if (module === "finance") {
         if (page === "dashboard") {
             return <Dashboard />;
         } else if (page === "add_audit") {

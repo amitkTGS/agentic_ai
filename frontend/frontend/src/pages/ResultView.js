@@ -58,8 +58,7 @@ export default function ResultView() {
             <Card.Header className="fw-bold">Risk Assessment</Card.Header>
             <Card.Body className="text-center">
               <div className="mb-3">
-                <h6 className="text-muted">Risk Score</h6>
-                <h2 className={`text-${getRiskColor(data?.risk_level)}`}>{data?.risk_score.toFixed(3)}</h2>
+                <h6 className="text-muted">Risk Level</h6>
                 <Badge bg={getRiskColor(data?.risk_level)} className="fs-6">
                   {data?.risk_level?.toUpperCase()} RISK
                 </Badge>
