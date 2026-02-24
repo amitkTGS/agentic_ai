@@ -7,7 +7,7 @@ const projects = [
     status: "Live",
     badge: "success",
     description:
-      "Real-time receipt scanning and policy validation engine.",
+      "Real-time receipt scanning,vendor invoices and policy validation engine.",
     route: "/finance/dashboard",
     image:
       "https://cdn-icons-png.flaticon.com/512/3135/3135706.png"
