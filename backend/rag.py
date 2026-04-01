@@ -14,6 +14,7 @@ expense_policy_collection = client.get_or_create_collection("expense_policies")
 expense_collection = client.get_or_create_collection("historical_expenses_new")
 healthcare_policy_collection = client.get_or_create_collection("healthcare_policies")
 healthcare_collection = client.get_or_create_collection("historical_healthcare_claims")
+policies_collection  =  client.get_or_create_collection('polocies_collection')
 
 
 def embed_text(text: str):
@@ -96,3 +97,14 @@ def semantic_duplicate_score_healthcare(ocr_text: str):
 def delete_expense_embedding(expense_id: int):
     expense_collection.delete(ids=[str(expense_id)])
     
+    
+def savePolicies(documents: list, metadatas: list, ids: list):
+    policies_collection.add(
+        documents=documents,
+        embeddings=embed_texts_new(documents),
+        metadatas=metadatas,
+        ids=ids
+    )
+    
+def embed_texts_new(texts: list):
+    return embedder.encode(texts).tolist()

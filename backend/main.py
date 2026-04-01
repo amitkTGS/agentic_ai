@@ -2,7 +2,7 @@ from common import (CATEGORIES, fallback_value,HEALTH_CARE_CATEGORIES)
 from fastapi import FastAPI, UploadFile, File,Form,Request
 import shutil
 from database import Base, engine, SessionLocal
-from models import Expense, ExpenseAnalysisResults, Taxonomy
+from models import Expense, ExpenseAnalysisResults, Taxonomy,Policies,PolicyRules
 from ocr import run_ocr
 # from extraction_agent import (extract_fields,extract_fields_with_rag)
 from extraction_agent_new import (extract_fields_with_rag,extract_fields_with_rag_health_care)
@@ -11,7 +11,7 @@ from duplicate_agent import duplicate_probability
 from risk_agent import compute_risk
 from decision_agent import decide
 import json
-from ExpenseFilters import ExpenseFilters
+from ExpenseFilters import (ExpenseFilters,SaveRequest)
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from schemas import Metrics, MetricsResponse
@@ -23,9 +23,11 @@ from rag import (
     semantic_duplicate_score,
     retrieve_health_policy_context,
     store_healthcare_claim_embedding,
-    semantic_duplicate_score_healthcare
+    semantic_duplicate_score_healthcare,
+    savePolicies
 )
 
+from policies_list import rules_data
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -352,4 +354,101 @@ async def process_expense_new_health(file: UploadFile = File(...),form_data:str=
         }
     except Exception as e:
         print(e)
+        
+@app.get('/api/policies')
+def get_policies_list():
+    db = SessionLocal()
+    policies = db.query(Policies).all()
+    return policies
 
+
+@app.get("/api/get_policies")
+def get_rules():
+    return rules_data
+
+@app.get("/api/get_policies/{id}")
+def get_rules(id:int):
+    db = SessionLocal()
+    rules = db.query(PolicyRules).filter(PolicyRules.policy_id == id).all
+    rules_list = [json.loads(rule.rule_json) for rule in rules]
+    return rules_list
+            
+    
+
+@app.post('/api/save_policies')
+def save_policies(req: SaveRequest):
+    documents = []
+    metadatas = []
+    ids = []
+
+    for i, rule in enumerate(req.data):
+        doc_text = f"""
+        Rule: {rule.rule_id}
+        Condition: {rule.condition}
+        Action: {rule.action}
+        Severity: {rule.severity}
+        """
+
+        documents.append(doc_text)
+
+        metadatas.append({
+            "category": rule.category,
+            "domain": rule.domain,
+            "severity": rule.severity,
+            "rule_id": rule.rule_id,
+            "status": req.status
+        })
+
+        ids.append(f"{rule.rule_id}_{i}")
+
+    savePolicies(documents, metadatas, ids)
+    db = SessionLocal()
+    if req.status != "APPROVED":
+        return {"message": "Policy not saved (Rejected)"}
+
+    # ✅ Step 1: Deactivate all existing policies
+    db.query(Policies).update({"status": "INACTIVE"})
+    db.commit()
+    # save the file if status was approved
+    if(req.status == 'APPROVED'):
+        policy = Policies(name=req.file_name, status="ACTIVE")
+        db.add(policy)
+        db.commit()
+        db.refresh(policy)
+        
+        for rule in req.data:
+            db.add(PolicyRules(
+                policy_id=policy.id,
+                rule_json=json.dumps(rule.dict())   # ✅ important
+            ))
+
+        db.commit()
+    return {"message": f"{req.status} policy saved successfully"}
+
+@app.post('/api/policies/activate/{id}')
+def activate_policy(id:int):
+    db = SessionLocal()
+    
+    db.query(Policies).update({"status": "INACTIVE"})
+    
+    policy_to_activate = db.query(Policies).filter(Policies.id == id).first()
+    if policy_to_activate:
+        policy_to_activate.status = "ACTIVE"
+        db.commit()
+        return {"message": f"Policy {id} activated successfully"}
+    else:
+        return {"message": f"Policy {id} not found"}, 404
+    
+@app.post('/api/policies/delete/{id}')
+def deletePolicy(id:int):
+    db = SessionLocal()
+    policy_to_delete = db.query(Policies).filter(Policies.id == id).first()
+    if policy_to_delete:
+        db.delete(policy_to_delete)
+        db.commit()
+        return {"message": f"Policy {id} deleted successfully"}
+    else:
+        return {"message": f"Policy {id} not found"}, 404
+
+    
+    

@@ -65,6 +65,22 @@ class Taxonomy(Base):
     module = Column(String,nullable=False)
     category = Column(String,nullable=False)
     sub_category = Column(String,nullable=False)
+    
+class Policies(Base):
+    __tablename__ = "policies_collection"
+    
+    id = Column(Integer,primary_key=True,index=True)
+    name= Column(String,nullable=False)
+    status = Column(String,nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PolicyRules(Base):
+    __tablename__ = "policy_rules"
+    
+    id = Column(Integer,primary_key=True,index=True)
+    policy_id = Column(Integer,ForeignKey("policies_collection.id"))
+    rule_json = Column(Text, nullable=False)
+    
 
 
 

@@ -24,6 +24,24 @@ const auditService = {
     },
     saveTaxonomy(data){
         return auditApi.post('api/save_taxonomy',data);
+    },
+    getPolicies(data){
+        return auditApi.get('api/get_policies',data);
+    },
+    PolicyUpload(data){
+        return auditApi.get('api/get_policies',data);
+    },
+    savePolicies(payload){
+        return auditApi.post('api/save_policies',payload)
+    },
+    getPoliciesList(){
+        return auditApi.get('api/policies');
+    },
+    activatePolicy(id){
+        return auditApi.post('api/policies/activate/'+id);
+    },
+    deletePolicy(id){
+        return auditApi.post('api/policies/delete/'+id);
     }
 }
 export default auditService;    

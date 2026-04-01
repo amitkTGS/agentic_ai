@@ -6,6 +6,9 @@ import UnderProcess from "../pages/UnderProcess";
 import ScoreCard from "../pages/ScoreCard";
 import DefineTaxonomy from "../pages/DefineTaxonomy";
 import ResultView from "../pages/ResultView";
+import PolicyUpload from "../pages/PolicyUpload";
+import ResultViewPolicy from "../pages/ResultViewPolicy";
+import PolicyList from "../pages/PolicyList";
 const ModuleGuard = ({ page }) => {
 
     const { module } = useParams();
@@ -19,6 +22,12 @@ const ModuleGuard = ({ page }) => {
             return <ScoreCard />
         }else if(page === "result_view"){
             return <ResultView />
+        } else if (page === 'policy_upload'){
+            return <PolicyUpload />
+        }else if (page === 'result_view_policy'){
+            return <ResultViewPolicy /> 
+        }else if (page === 'policies_list'){
+            return <PolicyList />
         }
     }else if(page === 'define_taxonomy'){
         return <DefineTaxonomy module={module} />
