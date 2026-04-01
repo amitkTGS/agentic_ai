@@ -31,6 +31,7 @@ function AppContent() {
                   <Nav.Link as={Link} to={`/${module}/dashboard`}>Dashboard</Nav.Link>
                   <Nav.Link as={Link} to={`/${module}/add_audit`}>New Audit</Nav.Link>
                   <Nav.Link as={Link} to={`/${module}/score_card`}>Metrics</Nav.Link>
+                  <Nav.Link as={Link} to={`/${module}/policies_list`}>Policies</Nav.Link>
                 </>
               )}
             </Nav>
@@ -70,6 +71,10 @@ function CommonContent() {
           <Route path="/:module/score_card" element={<ModuleGuard page="score_card" />} />
           <Route path="/:module/define_taxonomy" element={<ModuleGuard page="define_taxonomy" />} />
           <Route path="/:module/under_process" element={<ModuleGuard page="under_process" />} />
+          <Route path="/:module/policies_list" element={<ModuleGuard page="policies_list" />} />
+          <Route path="/:module/policy_upload" element={<ModuleGuard page="policy_upload" />} />
+          <Route path="/:module/result_view_policy" element={<ModuleGuard page="result_view_policy" />} />
+          <Route path="/:module/result_view_policy/:id" element={<ModuleGuard page="result_view_policy" />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
